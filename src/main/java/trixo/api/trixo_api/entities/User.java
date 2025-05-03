@@ -1,14 +1,22 @@
 package trixo.api.trixo_api.entities;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.cloud.Timestamp;
+
+import trixo.api.trixo_api.controllers.TimestampDeserializer;
+import trixo.api.trixo_api.controllers.TimestampSerializer;
 
 public class User {
     private String id;
     private String username;
     private String password;
     private String email;
+    private String avatar_img;
 
-    private LocalDateTime registrationDate;
+    @JsonDeserialize(using = TimestampDeserializer.class)
+    @JsonSerialize(using = TimestampSerializer.class)
+    private Timestamp registration_date;
 
     public String getId() {
         return id;
@@ -34,11 +42,17 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
-    public LocalDateTime getRegistrationDate() {
-        return registrationDate;
+    public Timestamp getRegistration_date() {
+        return registration_date;
     }
-    public void setRegistrationDate(LocalDateTime registrationDate) {
-        this.registrationDate = registrationDate;
+    public void setRegistration_date(Timestamp registrationDate) {
+        this.registration_date = registrationDate;
+    }
+    public String getAvatar_img() {
+        return avatar_img;
+    }
+    public void setAvatar_img(String avatarImg) {
+        this.avatar_img = avatarImg;
     }
 
     

@@ -19,7 +19,7 @@ public class Post {
     @JsonSerialize(using = TimestampSerializer.class)
     private Timestamp created_at;
     private int likes_count;
-    private Integer comments_counts;
+    private Integer comments_count;
     private List<String> tags;
     private User user;
 
@@ -39,8 +39,8 @@ public class Post {
         this.caption = title;
     }
 
-    public Integer getComments_counts() {
-        return comments_counts;
+    public Integer getComments_count() {
+        return comments_count;
     }
 
     public List<String> getTags() {
@@ -54,8 +54,8 @@ public class Post {
     //     return images;
     // }
 
-    public void setComments_counts(Integer comments_counts) {
-        this.comments_counts = comments_counts;
+    public void setComments_count(Integer comments_count) {
+        this.comments_count = comments_count;
     }
 
     public Timestamp getCreated_at() {
