@@ -5,6 +5,9 @@ target/
 !**/src/test/**/target/
 src\main\resources\firebase-service.json
 
+# Archivos de credenciales de Firebase
+trixo-1eacc-firebase-adminsdk-fbsvc-7b84fab0af.json
+
 ### STS ###
 .apt_generated
 .classpath

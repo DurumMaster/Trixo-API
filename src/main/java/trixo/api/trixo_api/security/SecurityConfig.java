@@ -15,9 +15,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
+                //.requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/posts/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/**").permitAll()
-                .anyRequest().permitAll()
+                .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(Customizer.withDefaults()) // aquí se configura el soporte JWT de Firebase

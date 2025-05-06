@@ -1,5 +1,6 @@
 package trixo.api.trixo_api.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -11,23 +12,24 @@ import trixo.api.trixo_api.controllers.TimestampSerializer;
 
 
 public class Post {
-    private Integer id;
+    private String id;
     private String caption;
-    private List<String> images;
+    private List<String> images = new ArrayList<String>();
+    private List<String> likedBy = new ArrayList<String>();
 
     @JsonDeserialize(using = TimestampDeserializer.class)
     @JsonSerialize(using = TimestampSerializer.class)
     private Timestamp created_at;
-    private int likes_count;
-    private Integer comments_counts;
-    private List<String> tags;
+
+    private Integer comments_count;
+    private List<String> tags = new ArrayList<String>();
     private User user;
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -39,8 +41,8 @@ public class Post {
         this.caption = title;
     }
 
-    public Integer getComments_counts() {
-        return comments_counts;
+    public Integer getComments_count() {
+        return comments_count;
     }
 
     public List<String> getTags() {
@@ -50,12 +52,9 @@ public class Post {
     public List<String> getImages() {
         return images;
     }
-    // public List<String> getImages() {
-    //     return images;
-    // }
 
-    public void setComments_counts(Integer comments_counts) {
-        this.comments_counts = comments_counts;
+    public void setComments_count(Integer comments_count) {
+        this.comments_count = comments_count;
     }
 
     public Timestamp getCreated_at() {
@@ -73,11 +72,13 @@ public class Post {
     public void setUser(User user) {
         this.user = user;
     }
-    public int getLikes_count() {
-        return likes_count;
+
+    public List<String> getLikedBy() {
+        return likedBy;
     }
-    public void setLikes_count(int netVotes) {
-        this.likes_count = netVotes;
+
+    public void setLikedBy(List<String> likedBy) {
+        this.likedBy = likedBy;
     }
 
     public void setImages(List<String> images) {
