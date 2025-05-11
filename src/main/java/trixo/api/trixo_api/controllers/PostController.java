@@ -92,4 +92,64 @@ public class PostController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/postsByUserID")
+    public ResponseEntity<List<PostResponse>> getPostByUserID(@RequestParam String userID) {
+        String userId = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            userId = jwt.getSubject();
+        }
+        try {
+            List<PostResponse> posts = postService.getPostsByUserId(userID, 10, userId);
+            return ResponseEntity.ok(posts);
+        } catch (ExecutionException | InterruptedException e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @GetMapping("/likedPosts")
+    public ResponseEntity<List<PostResponse>> getLikedPosts(@RequestParam String userID) {
+        String userId = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            userId = jwt.getSubject();
+        }
+        try {
+            List<PostResponse> posts = postService.getLikedPosts(userID, 10, userId);
+            return ResponseEntity.ok(posts);
+        } catch (ExecutionException | InterruptedException e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<String> deletePost(@PathVariable String postId) {
+        try {
+            postService.deletePost(postId);
+            return ResponseEntity.ok("Post deleted successfully.");
+        } catch (ExecutionException | InterruptedException e) {
+            return ResponseEntity.status(500).body("Error deleting post: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{postId}")
+    public ResponseEntity<PostResponse> getPostById(@PathVariable String postId) {
+        String userId = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            userId = jwt.getSubject();
+        }
+        try {
+            PostResponse post = postService.getPostById(postId, userId);
+            return ResponseEntity.ok(post);
+        } catch (ExecutionException | InterruptedException e) {
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    
 }

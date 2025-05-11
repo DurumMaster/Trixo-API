@@ -1,5 +1,7 @@
 package trixo.api.trixo_api.entities;
 
+import java.util.List;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.cloud.Timestamp;
@@ -17,6 +19,7 @@ public class User {
     @JsonDeserialize(using = TimestampDeserializer.class)
     @JsonSerialize(using = TimestampSerializer.class)
     private Timestamp registration_date;
+    private List<String> preferences;
 
     public String getId() {
         return id;
@@ -55,5 +58,12 @@ public class User {
         this.avatar_img = avatarImg;
     }
 
+    public List<String> getPreferences() {
+        return preferences;
+    }
+
+    public void setPreferences(List<String> preferences) {
+        this.preferences = preferences;
+    }
     
 }

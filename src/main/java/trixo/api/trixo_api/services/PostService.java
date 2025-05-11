@@ -67,6 +67,34 @@ public class PostService {
         }
     }
 
+    public PostResponse getPostById(String postId, String currentUserId) throws ExecutionException, InterruptedException {
+        Post post = postRepository.findById(postId);
+        if (post == null) {
+            throw new IllegalArgumentException("Post no encontrado con ID: " + postId);
+        }
+        return mapToResponse(post, currentUserId);
+    }
+
+    public void deletePost(String postId) throws ExecutionException, InterruptedException {
+        Post post = postRepository.findById(postId);
+        if (post == null) {
+            throw new IllegalArgumentException("Post no encontrado con ID: " + postId);
+        }
+        postRepository.deletePost(postId);
+    }
+
+    public List<PostResponse> getPostsByUserId(String userId, int limit, String currentUserId) throws ExecutionException, InterruptedException {
+        return postRepository.getUsersPosts(userId, limit).stream()
+                .map(post -> mapToResponse(post, currentUserId))
+                .toList();
+    }
+
+    public List<PostResponse> getLikedPosts(String userId, int limit, String currentUserId) throws ExecutionException, InterruptedException {
+        return postRepository.getLikedPosts(userId, limit).stream()
+                .map(post -> mapToResponse(post, currentUserId))
+                .toList();
+    }
+
     public PostResponse mapToResponse(Post post, String currentUserId) {
         return new PostResponse(
             post.getId(),

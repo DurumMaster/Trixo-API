@@ -4,6 +4,7 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import com.google.firebase.cloud.FirestoreClient;
 import org.springframework.stereotype.Repository;
+
 import trixo.api.trixo_api.entities.Post;
 
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class PostRepository {
         return executeQuery(
                 db.collection(COLLECTION_NAME)
                         .orderBy("created_at", Query.Direction.DESCENDING)
-                        .limit(limit));
+                    .limit(limit));
     }
 
     public List<Post> getTopPosts(int limit) throws ExecutionException, InterruptedException {
@@ -93,6 +94,34 @@ public class PostRepository {
         return null;
     }
 
+    public List<Post> getUsersPosts(String userId, int limit) throws ExecutionException, InterruptedException {
+        Firestore db = FirestoreClient.getFirestore();
+        Query query = db.collection(COLLECTION_NAME)
+                .whereEqualTo("user", userId)
+                .orderBy("created_at", Query.Direction.DESCENDING).limit(limit);
+        return executeQuery(query);
+    }
+
+    public List<Post> getLikedPosts(String userId, int limit) throws ExecutionException, InterruptedException {
+        Firestore db = FirestoreClient.getFirestore();
+        Query query = db.collection(COLLECTION_NAME)
+                .whereArrayContains("likedBy", userId)
+                .orderBy("created_at", Query.Direction.DESCENDING).limit(limit);
+        return executeQuery(query);
+    }
+
+    public boolean deletePost(String postId) {
+        try {
+            Firestore db = FirestoreClient.getFirestore();
+            ApiFuture<WriteResult> future = db.collection(COLLECTION_NAME).document(postId).delete();
+            future.get();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     private List<Post> executeQuery(Query query) throws ExecutionException, InterruptedException {
         ApiFuture<QuerySnapshot> future = query.get();
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
@@ -103,4 +132,5 @@ public class PostRepository {
         }
         return posts;
     }
+
 }

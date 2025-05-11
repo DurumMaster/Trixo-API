@@ -16,7 +16,7 @@ public class Post {
     private String caption;
     private List<String> images = new ArrayList<String>();
     private List<String> likedBy = new ArrayList<String>();
-
+    
     @JsonDeserialize(using = TimestampDeserializer.class)
     @JsonSerialize(using = TimestampSerializer.class)
     private Timestamp created_at;
@@ -88,4 +88,5 @@ public class Post {
     public void setTags(List<String> tags) {
         this.tags = tags;
     }
+
 }
