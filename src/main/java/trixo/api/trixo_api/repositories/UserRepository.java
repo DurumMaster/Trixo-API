@@ -71,6 +71,17 @@ public class UserRepository {
         }
     }
 
+    public boolean registerPreferences(String userId, List<String> preferences) {
+        try {
+            Firestore db = FirestoreClient.getFirestore();
+            db.collection(COLLECTION_NAME).document(userId).set(preferences);
+            return true; 
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false; 
+        }
+    }
+
     public boolean hasPreferences(String userId) {
         try {
             User user = getUserById(userId);

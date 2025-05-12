@@ -55,6 +55,15 @@ public class UserController {
         }
     }
 
+    @PostMapping("/registerPreferences")
+    public ResponseEntity<String> registerUserPreferences(@RequestBody String userID, @RequestBody List<String> preferences) {
+        if(userService.registerPreferences(userID, preferences)){
+            return ResponseEntity.ok("User preferences registered successfully");
+        } else {
+            return ResponseEntity.status(500).body("Error registering user preferences");
+        }
+    }
+
     @PostMapping("/update")
     public ResponseEntity<String> updateUser(@RequestBody String userID, @RequestBody User user) {
         if(userService.updateUser(userID, user)){

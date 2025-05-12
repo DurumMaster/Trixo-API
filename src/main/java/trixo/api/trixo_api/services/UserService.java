@@ -30,6 +30,10 @@ public class UserService {
         return userRepository.updateUserPreferences(userID, preferences);
     }
 
+    public boolean registerPreferences(String userID, List<String> preferences) {
+        return userRepository.registerPreferences(userID, preferences);
+    }
+
     public boolean updateUser(String userID, User user) {
         return userRepository.updateUser(userID, user);
     }
