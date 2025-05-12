@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import trixo.api.trixo_api.entities.User;
@@ -40,12 +41,9 @@ public class UserController {
     }
 
     @GetMapping("/getPreferences")
-    public ResponseEntity<String> getUserPreferences(@RequestBody String userID) {
-        if(userService.hasPreferences(userID)){
-            return ResponseEntity.ok("User preferences retrieved successfully");
-        } else {
-            return ResponseEntity.status(500).body("Error retrieving user preferences");
-        }
+    public ResponseEntity<Boolean> getUserPreferences(@RequestParam String userID) {
+        boolean hasPreferences = userService.hasPreferences(userID);
+        return ResponseEntity.ok(hasPreferences);
     }
 
     @PostMapping("/updatePreferences")
