@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import trixo.api.trixo_api.dto.RegisterPreferencesRequest;
 import trixo.api.trixo_api.entities.User;
 import trixo.api.trixo_api.services.UserService;
 
@@ -56,8 +57,8 @@ public class UserController {
     }
 
     @PostMapping("/registerPreferences")
-    public ResponseEntity<String> registerUserPreferences(@RequestBody String userID, @RequestBody List<String> preferences) {
-        if(userService.registerPreferences(userID, preferences)){
+    public ResponseEntity<String> registerUserPreferences(@RequestBody RegisterPreferencesRequest request) {
+        if(userService.registerPreferences(request.getUserID(), request.getPreferences())){
             return ResponseEntity.ok("User preferences registered successfully");
         } else {
             return ResponseEntity.status(500).body("Error registering user preferences");

@@ -1,11 +1,15 @@
 package trixo.api.trixo_api.repositories;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Repository;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.SetOptions;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 
@@ -19,9 +23,9 @@ public class UserRepository {
         try {
             Firestore db = FirestoreClient.getFirestore();
             ApiFuture<WriteResult> future = db.collection(COLLECTION_NAME).document(user.getId().toString()).set(user);
-            WriteResult result = future.get(); 
+            WriteResult result = future.get();
             System.out.println("User saved at: " + result.getUpdateTime());
-            return true; 
+            return true;
         } catch (Exception e) {
             System.err.println("Error inserting user: " + e.getMessage());
             e.printStackTrace();
@@ -34,27 +38,27 @@ public class UserRepository {
             Firestore db = FirestoreClient.getFirestore();
             User user = db.collection(COLLECTION_NAME).document(userId).get().get().toObject(User.class);
             if (user == null) {
-                return null; 
+                return null;
             }
-            return user; 
+            return user;
         } catch (Exception e) {
             e.printStackTrace();
-            return null; 
+            return null;
         }
     }
 
-    public List<String> getUserPreferences(String userID){
-        try{
+    public List<String> getUserPreferences(String userID) {
+        try {
             List<String> userPreferences = null;
             User user = getUserById(userID);
-            if(user != null){
-                if(user.getPreferences() != null){
+            if (user != null) {
+                if (user.getPreferences() != null) {
                     userPreferences = user.getPreferences();
                 }
             }
 
             return userPreferences;
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -64,21 +68,28 @@ public class UserRepository {
         try {
             Firestore db = FirestoreClient.getFirestore();
             db.collection(COLLECTION_NAME).document(userId).update("preferences", preferences);
-            return true; 
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
-            return false; 
+            return false;
         }
     }
 
     public boolean registerPreferences(String userId, List<String> preferences) {
         try {
             Firestore db = FirestoreClient.getFirestore();
-            db.collection(COLLECTION_NAME).document(userId).set(preferences);
-            return true; 
+            DocumentReference docRef;
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("preferences", preferences);
+
+            docRef = db.collection(COLLECTION_NAME).document(userId);
+            ApiFuture<WriteResult> future = docRef.set(data, SetOptions.merge());
+            future.get();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
-            return false; 
+            return false;
         }
     }
 
@@ -96,10 +107,10 @@ public class UserRepository {
         try {
             Firestore db = FirestoreClient.getFirestore();
             db.collection(COLLECTION_NAME).document(userId).set(user);
-            return true; 
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
-            return false; 
+            return false;
         }
     }
 
@@ -107,10 +118,10 @@ public class UserRepository {
         try {
             Firestore db = FirestoreClient.getFirestore();
             db.collection(COLLECTION_NAME).document(userId).delete();
-            return true; 
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
-            return false; 
+            return false;
         }
     }
 }
