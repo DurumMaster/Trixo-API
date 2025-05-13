@@ -59,28 +59,40 @@ public class PostRepository {
         return post;
     }
 
-    public List<Post> getAllPosts(int limit) throws ExecutionException, InterruptedException {
+    public List<Post> getAllPosts(int limit, int offset) throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
         return executeQuery(
                 db.collection(COLLECTION_NAME)
                         .orderBy("created_at", Query.Direction.DESCENDING)
-                    .limit(limit));
+                    .limit(limit).offset(offset));
     }
 
-    public List<Post> getTopPosts(int limit) throws ExecutionException, InterruptedException {
+    public List<Post> getTopPosts(int limit, int offset) throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
         return executeQuery(
                 db.collection(COLLECTION_NAME)
                         .orderBy("likes_count", Query.Direction.DESCENDING)
-                        .limit(limit));
+                    .limit(limit).offset(offset));
     }
 
-    public List<Post> getRecentPosts(int limit) throws ExecutionException, InterruptedException {
+    public List<Post> getRecentPosts(int limit, int offset) throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
         return executeQuery(
                 db.collection(COLLECTION_NAME)
                         .orderBy("created_at", Query.Direction.DESCENDING)
-                        .limit(limit));
+                    .limit(limit).offset(offset));
+    }
+
+    public List<Post> getForYou(List<String> preferences, int limit, int offset) throws ExecutionException, InterruptedException {
+        if (preferences == null || preferences.isEmpty()) {
+            return new ArrayList<>(); // No preferences, return empty list
+        }
+        Firestore db = FirestoreClient.getFirestore();
+        Query query = db.collection(COLLECTION_NAME)
+                .whereArrayContainsAny("tags", preferences)
+                .orderBy("created_at", Query.Direction.DESCENDING)
+            .limit(limit).offset(offset);
+        return executeQuery(query);
     }
 
     public Post findById(String postId) throws ExecutionException, InterruptedException {
