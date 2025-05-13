@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import trixo.api.trixo_api.dto.PostResponse;
 import trixo.api.trixo_api.entities.Post;
 import trixo.api.trixo_api.repositories.PostRepository;
+import trixo.api.trixo_api.repositories.UserRepository;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -16,26 +17,36 @@ public class PostService {
     @Autowired
     private PostRepository postRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     public PostResponse createPost(Post post) throws ExecutionException, InterruptedException {
         // Generar ID único y timestamp en Firestore
         Post savedPost = postRepository.save(post);
         return mapToResponse(savedPost, null); // userId null para nuevo post
     }
 
-    public List<PostResponse> getAllPosts(int limit, String currentUserId) throws ExecutionException, InterruptedException {
-        return postRepository.getAllPosts(limit).stream()
+    public List<PostResponse> getAllPosts(int limit, String currentUserId, int offset) throws ExecutionException, InterruptedException {
+        return postRepository.getAllPosts(limit, offset).stream()
                 .map(post -> mapToResponse(post, currentUserId))
                 .toList();
     }
 
-    public List<PostResponse> getTopPosts(int limit, String currentUserId) throws ExecutionException, InterruptedException {
-        return postRepository.getTopPosts(limit).stream()
+    public List<PostResponse> getTopPosts(int limit, String currentUserId, int offset) throws ExecutionException, InterruptedException {
+        return postRepository.getTopPosts(limit, offset).stream()
                 .map(post -> mapToResponse(post, currentUserId))
                 .toList();
     }
 
-    public List<PostResponse> getRecentPosts(int limit, String currentUserId) throws ExecutionException, InterruptedException {
-        return postRepository.getRecentPosts(limit).stream()
+    public List<PostResponse> getRecentPosts(int limit, String currentUserId, int offset) throws ExecutionException, InterruptedException {
+        return postRepository.getRecentPosts(limit, offset).stream()
+                .map(post -> mapToResponse(post, currentUserId))
+                .toList();
+    }
+
+    public List<PostResponse> getForYou(String userId, int limit, int offset, String currentUserId) throws ExecutionException, InterruptedException {
+        List<String> preferences = userRepository.getUserPreferences(userId);
+        return postRepository.getForYou(preferences, limit, offset).stream()
                 .map(post -> mapToResponse(post, currentUserId))
                 .toList();
     }

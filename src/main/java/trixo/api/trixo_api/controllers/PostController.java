@@ -39,11 +39,13 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PostResponse>> getAllPosts(@RequestParam(defaultValue = "10") int limit,
-            @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<PostResponse>> getAllPosts(
+        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "0") int offset,
+        @AuthenticationPrincipal UserDetails userDetails) {
         String userId = ((User) userDetails).getId();
         try {
-            List<PostResponse> posts = postService.getAllPosts(limit, userId);
+            List<PostResponse> posts = postService.getAllPosts(limit, userId, offset);
             return ResponseEntity.ok(posts);
         } catch (ExecutionException | InterruptedException e) {
             return ResponseEntity.status(500).build();
@@ -51,7 +53,9 @@ public class PostController {
     }
 
     @GetMapping("/top")
-    public ResponseEntity<List<PostResponse>> getTopPosts(@RequestParam(defaultValue = "10") int limit) {
+    public ResponseEntity<List<PostResponse>> getTopPosts(
+        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "0") int offset) {
         String userId = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
@@ -59,7 +63,7 @@ public class PostController {
             userId = jwt.getSubject();
         }
         try {
-            List<PostResponse> topPosts = postService.getTopPosts(limit, userId);
+            List<PostResponse> topPosts = postService.getTopPosts(limit, userId, offset);
             return ResponseEntity.ok(topPosts);
         } catch (ExecutionException | InterruptedException e) {
             return ResponseEntity.status(500).build();
@@ -67,12 +71,33 @@ public class PostController {
     }
 
     @GetMapping("/recent")
-    public ResponseEntity<List<PostResponse>> getRecentPosts(@RequestParam(defaultValue = "10") int limit,
-            @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<List<PostResponse>> getRecentPosts(
+        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "0") int offset,
+        @AuthenticationPrincipal UserDetails userDetails) {
         String userId = ((User) userDetails).getId();
         try {
-            List<PostResponse> recentPosts = postService.getRecentPosts(limit, userId);
+            List<PostResponse> recentPosts = postService.getRecentPosts(limit, userId, offset);
             return ResponseEntity.ok(recentPosts);
+        } catch (ExecutionException | InterruptedException e) {
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @GetMapping("/forYou/{userID}")
+    public ResponseEntity<List<PostResponse>> getForYou(
+        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "0") int offset,
+        @RequestParam String userID) {
+        String userId = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            userId = jwt.getSubject();
+        }
+        try {
+            List<PostResponse> forYouPosts = postService.getForYou(userID, limit, offset, userId);
+            return ResponseEntity.ok(forYouPosts);
         } catch (ExecutionException | InterruptedException e) {
             return ResponseEntity.status(500).body(null);
         }
@@ -94,7 +119,9 @@ public class PostController {
     }
 
     @GetMapping("/postsByUserID")
-    public ResponseEntity<List<PostResponse>> getPostByUserID(@RequestParam String userID) {
+    public ResponseEntity<List<PostResponse>> getPostByUserID(
+        @RequestParam String userID,
+        @RequestParam (defaultValue = "10") int limit){
         String userId = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
@@ -102,7 +129,7 @@ public class PostController {
             userId = jwt.getSubject();
         }
         try {
-            List<PostResponse> posts = postService.getPostsByUserId(userID, 10, userId);
+            List<PostResponse> posts = postService.getPostsByUserId(userID, limit, userId);
             return ResponseEntity.ok(posts);
         } catch (ExecutionException | InterruptedException e) {
             return ResponseEntity.status(500).build();
