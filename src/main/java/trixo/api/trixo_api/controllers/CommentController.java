@@ -1,5 +1,7 @@
 package trixo.api.trixo_api.controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,12 +40,9 @@ public class CommentController {
     }
 
     @GetMapping("/getCommentsByID")
-    public ResponseEntity<String> getComments(@RequestParam String postID) {
-        if (!commentService.getCommentById(postID).isEmpty()) {
-            return ResponseEntity.ok("Comments retrieved successfully");
-        } else {
-            return ResponseEntity.status(404).body("Error retrieving comments");
-        }
+    public ResponseEntity<List<Comment>> getComments(@RequestParam String postID) {
+        List<Comment> comments = commentService.getCommentById(postID);
+        return ResponseEntity.ok(comments);
     }
     
 }
