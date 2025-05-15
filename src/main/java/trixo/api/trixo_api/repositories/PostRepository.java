@@ -198,6 +198,8 @@ public class PostRepository {
                 if(status.equals("notReported")){
                     posts.add(post);
                 }
+            } else {
+                posts.add(post);
             }
         }
         return posts;
