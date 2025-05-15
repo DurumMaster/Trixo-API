@@ -24,6 +24,7 @@ public class Post {
     private Integer comments_count;
     private List<String> tags = new ArrayList<String>();
     private User user;
+    private String status;
 
     public String getId() {
         return id;
@@ -87,6 +88,14 @@ public class Post {
 
     public void setTags(List<String> tags) {
         this.tags = tags;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
 }

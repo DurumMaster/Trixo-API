@@ -106,6 +106,16 @@ public class PostService {
                 .toList();
     }
 
+    public List<PostResponse> getPostsByStatus(String status, String currentUserId) throws ExecutionException, InterruptedException {
+        return postRepository.getPostByStatus(status).stream()
+                .map(post -> mapToResponse(post, currentUserId))
+                .toList();
+    }
+
+    public boolean updatePostStatus(String postId, String status){
+        return postRepository.updatePostStatus(postId, status);
+    }
+
     public PostResponse mapToResponse(Post post, String currentUserId) {
         return new PostResponse(
             post.getId(),
@@ -115,6 +125,7 @@ public class PostService {
             post.getComments_count(),
             post.getTags(),
             post.getUser(),
+            post.getStatus(),
             currentUserId != null ? post.getLikedBy().contains(currentUserId) : false,
             post.getLikedBy().size()
         );

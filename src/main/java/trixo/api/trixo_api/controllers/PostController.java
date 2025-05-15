@@ -178,5 +178,31 @@ public class PostController {
         }
     }
 
+    @GetMapping("/getPostsByStatus/{status}")
+    public ResponseEntity<List<PostResponse>> getPostsByStatus(
+        @PathVariable String status) {
+        String userId = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            userId = jwt.getSubject();
+        }
+        try {
+            List<PostResponse> posts = postService.getPostsByStatus(status, userId);
+            return ResponseEntity.ok(posts);
+        } catch (ExecutionException | InterruptedException e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+
+    @PutMapping("/{postId}/status/{status}")
+    public ResponseEntity<String> updatePostStatus(
+        @PathVariable String postId,
+        @PathVariable String status) throws ExecutionException, InterruptedException {
+            postService.updatePostStatus(postId, status);
+            return ResponseEntity.ok("Post status updated successfully.");
+    }
+
     
 }

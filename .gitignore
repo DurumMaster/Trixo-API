@@ -3,7 +3,6 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-src\main\resources\firebase-service.json
 
 # Archivos de credenciales de Firebase
 trixo-1eacc-firebase-adminsdk-fbsvc-7b84fab0af.json
@@ -35,3 +34,6 @@ build/
 
 ### VS Code ###
 .vscode/
+src/main/resources/firebase-service.json
+src/main/resources/application.properties
+src/main/java/trixo/api/trixo_api/TrixoApiApplication.java

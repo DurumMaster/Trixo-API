@@ -32,6 +32,7 @@ public class PostRepository {
         postData.put("comments_count", post.getComments_count());
         postData.put("tags", post.getTags());
         postData.put("user", post.getUser());
+        postData.put("status", post.getStatus());
 
         // Manejar ID y timestamps
         if (post.getId() == null) {
@@ -126,6 +127,32 @@ public class PostRepository {
         try {
             Firestore db = FirestoreClient.getFirestore();
             ApiFuture<WriteResult> future = db.collection(COLLECTION_NAME).document(postId).delete();
+            future.get();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<Post> getPostByStatus(String status) {
+        Firestore db = FirestoreClient.getFirestore();
+        Query query = db.collection(COLLECTION_NAME)
+                .whereEqualTo("status", status)
+                .orderBy("created_at", Query.Direction.DESCENDING);
+        try {
+            return executeQuery(query);
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public boolean updatePostStatus(String postId, String status) {
+        try {
+            Firestore db = FirestoreClient.getFirestore();
+            DocumentReference docRef = db.collection(COLLECTION_NAME).document(postId);
+            ApiFuture<WriteResult> future = docRef.update("status", status);
             future.get();
             return true;
         } catch (Exception e) {
