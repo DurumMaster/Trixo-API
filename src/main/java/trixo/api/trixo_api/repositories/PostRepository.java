@@ -32,7 +32,6 @@ public class PostRepository {
         postData.put("comments_count", post.getComments_count());
         postData.put("tags", post.getTags());
         postData.put("user", post.getUser());
-        postData.put("status", post.getStatus());
 
         // Manejar ID y timestamps
         if (post.getId() == null) {
@@ -65,6 +64,7 @@ public class PostRepository {
         return executeQuery(
                 db.collection(COLLECTION_NAME)
                         .orderBy("created_at", Query.Direction.DESCENDING)
+                        
                     .limit(limit).offset(offset));
     }
 
@@ -107,19 +107,19 @@ public class PostRepository {
         return null;
     }
 
-    public List<Post> getUsersPosts(String userId, int limit) throws ExecutionException, InterruptedException {
+    public List<Post> getUsersPosts(String userId, int limit, int offset) throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
         Query query = db.collection(COLLECTION_NAME)
                 .whereEqualTo("user", userId)
-                .orderBy("created_at", Query.Direction.DESCENDING).limit(limit);
+                .orderBy("created_at", Query.Direction.DESCENDING).limit(limit).offset(offset);
         return executeQuery(query);
     }
 
-    public List<Post> getLikedPosts(String userId, int limit) throws ExecutionException, InterruptedException {
+    public List<Post> getLikedPosts(String userId, int limit, int offset) throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
         Query query = db.collection(COLLECTION_NAME)
                 .whereArrayContains("likedBy", userId)
-                .orderBy("created_at", Query.Direction.DESCENDING).limit(limit);
+                .orderBy("created_at", Query.Direction.DESCENDING).limit(limit).offset(offset);
         return executeQuery(query);
     }
 
@@ -136,15 +136,23 @@ public class PostRepository {
     }
 
     public List<Post> getPostByStatus(String status) {
+        List<Post> posts = new ArrayList<>();
         Firestore db = FirestoreClient.getFirestore();
         Query query = db.collection(COLLECTION_NAME)
-                .whereEqualTo("status", status)
+                .whereEqualTo("report.status", status)
                 .orderBy("created_at", Query.Direction.DESCENDING);
         try {
-            return executeQuery(query);
+            ApiFuture<QuerySnapshot> future = query.get();
+            List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+
+            for (QueryDocumentSnapshot doc : documents) {
+                Post post = doc.toObject(Post.class);
+                posts.add(post);
+            }
+            return posts;
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
-            return new ArrayList<>();
+            return posts;
         }
     }
 
@@ -152,7 +160,24 @@ public class PostRepository {
         try {
             Firestore db = FirestoreClient.getFirestore();
             DocumentReference docRef = db.collection(COLLECTION_NAME).document(postId);
-            ApiFuture<WriteResult> future = docRef.update("status", status);
+            ApiFuture<WriteResult> future = docRef.update("report.status", status);
+            future.get();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean createReport(String postId, String reason, String userId) {
+        try {
+            Firestore db = FirestoreClient.getFirestore();
+            DocumentReference docRef = db.collection(COLLECTION_NAME).document(postId);
+            Map<String, Object> reportData = new HashMap<>();
+            reportData.put("status", "onRevision");
+            reportData.put("reason", reason);
+            reportData.put("reportedBy", userId);
+            ApiFuture<WriteResult> future = docRef.update("report", reportData);
             future.get();
             return true;
         } catch (Exception e) {
@@ -164,12 +189,17 @@ public class PostRepository {
     private List<Post> executeQuery(Query query) throws ExecutionException, InterruptedException {
         ApiFuture<QuerySnapshot> future = query.get();
         List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-
         List<Post> posts = new ArrayList<>();
+
         for (QueryDocumentSnapshot doc : documents) {
-            posts.add(doc.toObject(Post.class));
+            Post post = doc.toObject(Post.class);
+            if(doc.get("report") != null){
+                String status = doc.getString("report.status");
+                if(status.equals("notReported")){
+                    posts.add(post);
+                }
+            }
         }
         return posts;
     }
-
 }

@@ -121,7 +121,8 @@ public class PostController {
     @GetMapping("/postsByUserID")
     public ResponseEntity<List<PostResponse>> getPostByUserID(
         @RequestParam String userID,
-        @RequestParam (defaultValue = "10") int limit){
+        @RequestParam (defaultValue = "10") int limit,
+        @RequestParam (defaultValue = "0") int offset) {
         String userId = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
@@ -129,7 +130,7 @@ public class PostController {
             userId = jwt.getSubject();
         }
         try {
-            List<PostResponse> posts = postService.getPostsByUserId(userID, limit, userId);
+            List<PostResponse> posts = postService.getPostsByUserId(userID, limit, userId, offset);
             return ResponseEntity.ok(posts);
         } catch (ExecutionException | InterruptedException e) {
             return ResponseEntity.status(500).build();
@@ -137,7 +138,10 @@ public class PostController {
     }
 
     @GetMapping("/likedPosts")
-    public ResponseEntity<List<PostResponse>> getLikedPosts(@RequestParam String userID) {
+    public ResponseEntity<List<PostResponse>> getLikedPosts(
+        @RequestParam String userID,
+        @RequestParam (defaultValue = "10") int limit,
+        @RequestParam (defaultValue = "0") int offset) {
         String userId = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
@@ -145,7 +149,7 @@ public class PostController {
             userId = jwt.getSubject();
         }
         try {
-            List<PostResponse> posts = postService.getLikedPosts(userID, 10, userId);
+            List<PostResponse> posts = postService.getLikedPosts(userID, limit, userId, offset);
             return ResponseEntity.ok(posts);
         } catch (ExecutionException | InterruptedException e) {
             return ResponseEntity.status(500).build();
@@ -195,14 +199,37 @@ public class PostController {
         }
     }
 
+    @PutMapping("/{postId}/report/{reason}")
+    public ResponseEntity<String> createReport(
+        @PathVariable String postId,
+        @RequestParam String reason) {
+        String userId = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            userId = jwt.getSubject();
+        }
+        try {
+            boolean reportCreated = postService.createReport(postId, userId, reason);
+            if (reportCreated) {
+                return ResponseEntity.ok("Report created successfully.");
+            } else {
+                return ResponseEntity.status(500).body("Error creating report.");
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            return ResponseEntity.status(500).body("Error creating report: " + e.getMessage());
+        }
+    }
 
     @PutMapping("/{postId}/status/{status}")
     public ResponseEntity<String> updatePostStatus(
         @PathVariable String postId,
-        @PathVariable String status) throws ExecutionException, InterruptedException {
-            postService.updatePostStatus(postId, status);
+        @PathVariable String status) {
+        boolean statusUpdated = postService.updatePostStatus(postId, status);
+        if (statusUpdated) {
             return ResponseEntity.ok("Post status updated successfully.");
+        } else {
+            return ResponseEntity.status(500).body("Error updating post status.");
+        }
     }
-
-    
 }

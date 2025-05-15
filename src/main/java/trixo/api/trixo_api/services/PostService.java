@@ -94,14 +94,18 @@ public class PostService {
         postRepository.deletePost(postId);
     }
 
-    public List<PostResponse> getPostsByUserId(String userId, int limit, String currentUserId) throws ExecutionException, InterruptedException {
-        return postRepository.getUsersPosts(userId, limit).stream()
+    public boolean createReport(String postId, String userId, String reason) throws ExecutionException, InterruptedException {
+        return postRepository.createReport(postId, userId, reason);
+    }
+
+    public List<PostResponse> getPostsByUserId(String userId, int limit, String currentUserId, int offset) throws ExecutionException, InterruptedException {
+        return postRepository.getUsersPosts(userId, limit, offset).stream()
                 .map(post -> mapToResponse(post, currentUserId))
                 .toList();
     }
 
-    public List<PostResponse> getLikedPosts(String userId, int limit, String currentUserId) throws ExecutionException, InterruptedException {
-        return postRepository.getLikedPosts(userId, limit).stream()
+    public List<PostResponse> getLikedPosts(String userId, int limit, String currentUserId, int offset) throws ExecutionException, InterruptedException {
+        return postRepository.getLikedPosts(userId, limit, offset).stream()
                 .map(post -> mapToResponse(post, currentUserId))
                 .toList();
     }
@@ -125,10 +129,9 @@ public class PostService {
             post.getComments_count(),
             post.getTags(),
             post.getUser(),
-            post.getStatus(),
+            post.getReport(),
             currentUserId != null ? post.getLikedBy().contains(currentUserId) : false,
             post.getLikedBy().size()
         );
     }
-
 }
