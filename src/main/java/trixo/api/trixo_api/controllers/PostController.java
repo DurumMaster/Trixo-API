@@ -3,15 +3,12 @@ package trixo.api.trixo_api.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import trixo.api.trixo_api.dto.PostResponse;
 import trixo.api.trixo_api.entities.Post;
-import trixo.api.trixo_api.entities.User;
 import trixo.api.trixo_api.services.PostService;
 
 import java.util.List;
@@ -41,9 +38,13 @@ public class PostController {
     @GetMapping
     public ResponseEntity<List<PostResponse>> getAllPosts(
         @RequestParam(defaultValue = "10") int limit,
-        @RequestParam(defaultValue = "0") int offset,
-        @AuthenticationPrincipal UserDetails userDetails) {
-        String userId = ((User) userDetails).getId();
+        @RequestParam(defaultValue = "0") int offset) {
+        String userId = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            userId = jwt.getSubject();
+        }
         try {
             List<PostResponse> posts = postService.getAllPosts(limit, userId, offset);
             return ResponseEntity.ok(posts);
@@ -73,9 +74,13 @@ public class PostController {
     @GetMapping("/recent")
     public ResponseEntity<List<PostResponse>> getRecentPosts(
         @RequestParam(defaultValue = "10") int limit,
-        @RequestParam(defaultValue = "0") int offset,
-        @AuthenticationPrincipal UserDetails userDetails) {
-        String userId = ((User) userDetails).getId();
+        @RequestParam(defaultValue = "0") int offset) {
+        String userId = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            userId = jwt.getSubject();
+        }
         try {
             List<PostResponse> recentPosts = postService.getRecentPosts(limit, userId, offset);
             return ResponseEntity.ok(recentPosts);
@@ -88,7 +93,7 @@ public class PostController {
     public ResponseEntity<List<PostResponse>> getForYou(
         @RequestParam(defaultValue = "10") int limit,
         @RequestParam(defaultValue = "0") int offset,
-        @RequestParam String userID) {
+        @PathVariable String userID) {
         String userId = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
