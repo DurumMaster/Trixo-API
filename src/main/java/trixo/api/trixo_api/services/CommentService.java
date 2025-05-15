@@ -2,6 +2,7 @@ package trixo.api.trixo_api.services;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import trixo.api.trixo_api.entities.Comment;
@@ -10,6 +11,7 @@ import trixo.api.trixo_api.repositories.CommentRepository;
 @Service
 public class CommentService {
 
+    @Autowired
     private CommentRepository commentRepository;
 
     public boolean insertComment(Comment comment) {

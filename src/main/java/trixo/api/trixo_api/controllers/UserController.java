@@ -75,7 +75,7 @@ public class UserController {
     }
 
     @GetMapping("/getUser")
-    public ResponseEntity<User> getUserById(@RequestBody String userID) {
+    public ResponseEntity<User> getUserById(@RequestParam String userID) {
         User user = userService.getUserById(userID);
         if(user != null){
             return ResponseEntity.ok(user);
