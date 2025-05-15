@@ -110,7 +110,7 @@ public class PostRepository {
     public List<Post> getUsersPosts(String userId, int limit, int offset) throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
         Query query = db.collection(COLLECTION_NAME)
-                .whereEqualTo("user", userId)
+                .whereEqualTo("user.id", userId)
                 .orderBy("created_at", Query.Direction.DESCENDING).limit(limit).offset(offset);
         return executeQuery(query);
     }
