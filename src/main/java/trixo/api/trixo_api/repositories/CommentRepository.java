@@ -23,7 +23,7 @@ public class CommentRepository {
     public boolean insertComment(Comment comment) {
         try {
             Firestore db = FirestoreClient.getFirestore();
-            // Genera automáticamente un ID
+            // Genera automáticamente un ID para el nuevo documento
             DocumentReference docRef = db.collection(COLLECTION_NAME).document();
 
             // Guarda el ID generado en el objeto Comment, si quieres mantenerlo
