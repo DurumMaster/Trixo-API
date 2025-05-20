@@ -20,10 +20,11 @@ public class TrixoApiApplication {
 
 	private static void initializeFirebase() {
 		try {
-            FileInputStream serviceAccount = new FileInputStream("src\\main\\resources\\trixo-1eacc-firebase-adminsdk-fbsvc-7b84fab0af.json");
+            FileInputStream serviceAccount = new FileInputStream("src\\main\\resources\\firebase-service.json");
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .setStorageBucket("trixo-1eacc.firebasestorage.app")
 				.build();
 
             if (FirebaseApp.getApps().isEmpty()) {

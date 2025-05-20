@@ -1,5 +1,7 @@
 package trixo.api.trixo_api.repositories;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +14,7 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.SetOptions;
 import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
+import com.google.firebase.cloud.StorageClient;
 
 import trixo.api.trixo_api.entities.User;
 
@@ -106,6 +109,31 @@ public class UserRepository {
     public boolean updateUser(String userId, User user) {
         try {
             Firestore db = FirestoreClient.getFirestore();
+
+            User existingUser = getUserById(userId);
+            if(!user.getAvatar_img().equals(existingUser.getAvatar_img())){
+                if (user.getAvatar_img() != null && !user.getAvatar_img().isEmpty()) {
+                    try {
+                        StorageClient storageClient = StorageClient.getInstance();
+                        String avatarImg = "avatar_images/" + userId + "_" + System.currentTimeMillis() + ".jpg";
+                        
+                        storageClient.bucket()
+                        .create(avatarImg,
+                        user.getAvatar_img().getBytes(),
+                        "image/jpeg"
+                        );
+                        
+                        String url = URLEncoder.encode(avatarImg, StandardCharsets.UTF_8.toString());
+                        String avatarUrl = "https://firebasestorage.googleapis.com/v0/b/" 
+                        + storageClient.bucket().getName() + "/o/"+ url +"?alt=media";
+                        
+                        user.setAvatar_img(avatarUrl);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        return false;
+                    }
+                }
+            }
             db.collection(COLLECTION_NAME).document(userId).set(user);
             return true;
         } catch (Exception e) {
@@ -117,6 +145,21 @@ public class UserRepository {
     public boolean deleteUser(String userId) {
         try {
             Firestore db = FirestoreClient.getFirestore();
+            User user = getUserById(userId);
+            if (user != null && user.getAvatar_img() != null && !user.getAvatar_img().isEmpty()) {
+                try {
+                    String avatarUrl = user.getAvatar_img();
+
+                    String url = avatarUrl.substring(
+                        avatarUrl.indexOf("/o/") + 3, avatarUrl.indexOf("?alt=media")
+                    );
+
+                    String decodedUrl = java.net.URLDecoder.decode(url, StandardCharsets.UTF_8.toString());
+                    StorageClient.getInstance().bucket().get(decodedUrl).delete();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
             db.collection(COLLECTION_NAME).document(userId).delete();
             return true;
         } catch (Exception e) {

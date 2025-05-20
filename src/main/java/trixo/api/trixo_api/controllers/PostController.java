@@ -89,7 +89,7 @@ public class PostController {
         }
     }
 
-    @GetMapping("/forYou/{userID}")
+    @GetMapping("/{userID}/forYou")
     public ResponseEntity<List<PostResponse>> getForYou(
         @RequestParam(defaultValue = "10") int limit,
         @RequestParam(defaultValue = "0") int offset,
@@ -109,9 +109,7 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/like")
-    public ResponseEntity<PostResponse> toggleLike(
-            @PathVariable String postId) {
-
+    public ResponseEntity<PostResponse> toggleLike(@PathVariable String postId) {
         String userId = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
@@ -123,9 +121,9 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/postsByUserID")
+    @GetMapping("/{userID}/posts}")
     public ResponseEntity<List<PostResponse>> getPostByUserID(
-        @RequestParam String userID,
+        @PathVariable String userID,
         @RequestParam (defaultValue = "10") int limit,
         @RequestParam (defaultValue = "0") int offset) {
         String userId = null;
@@ -142,9 +140,9 @@ public class PostController {
         }
     }
 
-    @GetMapping("/likedPosts")
+    @GetMapping("{userID}/likedPosts")
     public ResponseEntity<List<PostResponse>> getLikedPosts(
-        @RequestParam String userID,
+        @PathVariable String userID,
         @RequestParam (defaultValue = "10") int limit,
         @RequestParam (defaultValue = "0") int offset) {
         String userId = null;
@@ -187,7 +185,7 @@ public class PostController {
         }
     }
 
-    @GetMapping("/getPostsByStatus/{status}")
+    @GetMapping("/{status}/status")
     public ResponseEntity<List<PostResponse>> getPostsByStatus(
         @PathVariable String status) {
         String userId = null;
@@ -204,10 +202,10 @@ public class PostController {
         }
     }
 
-    @PutMapping("/{postId}/report/{reason}")
+    @PutMapping("/{postId}/report")
     public ResponseEntity<String> createReport(
         @PathVariable String postId,
-        @RequestParam String reason) {
+        @RequestBody String reason) {
         String userId = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof Jwt) {

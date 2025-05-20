@@ -6,10 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import trixo.api.trixo_api.dto.RegisterPreferencesRequest;
@@ -32,23 +33,26 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteUser(@RequestBody String userID) {
+    @DeleteMapping("/{userID}")
+    public ResponseEntity<String> deleteUser(@PathVariable String userID) {
         if(userService.deleteUser(userID)){
-            return ResponseEntity.ok("User deleted successfully with ID");
+            return ResponseEntity.ok("User deleted successfully with ID: " + userID);
         } else {
             return ResponseEntity.status(500).body("Error deleting user");
         }
     }
 
-    @GetMapping("/getPreferences")
-    public ResponseEntity<Boolean> getUserPreferences(@RequestParam String userID) {
+    @GetMapping("{userID}/preferences")
+    public ResponseEntity<Boolean> getUserPreferences(@PathVariable String userID) {
         boolean hasPreferences = userService.hasPreferences(userID);
         return ResponseEntity.ok(hasPreferences);
     }
 
-    @PostMapping("/updatePreferences")
-    public ResponseEntity<String> updateUserPreferences(@RequestBody String userID, @RequestBody List<String> preferences) {
+    @PutMapping("/{userID}/preferences")
+    public ResponseEntity<String> updateUserPreferences(
+        @PathVariable String userID,
+        @RequestBody List<String> preferences
+    ) {
         if(userService.updateUserPreferences(userID, preferences)){
             return ResponseEntity.ok("User preferences updated successfully");
         } else {
@@ -65,8 +69,11 @@ public class UserController {
         }
     }
 
-    @PostMapping("/update")
-    public ResponseEntity<String> updateUser(@RequestBody String userID, @RequestBody User user) {
+    @PutMapping("/{userID}")
+    public ResponseEntity<String> updateUser(
+        @PathVariable String userID,
+        @RequestBody User user
+    ) {
         if(userService.updateUser(userID, user)){
             return ResponseEntity.ok("User updated successfully");
         } else {
@@ -74,8 +81,8 @@ public class UserController {
         }
     }
 
-    @GetMapping("/getUser")
-    public ResponseEntity<User> getUserById(@RequestParam String userID) {
+    @GetMapping("/{userID}")
+    public ResponseEntity<User> getUserById(@PathVariable String userID) {
         User user = userService.getUserById(userID);
         if(user != null){
             return ResponseEntity.ok(user);
