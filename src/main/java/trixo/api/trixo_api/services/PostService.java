@@ -46,6 +46,7 @@ public class PostService {
 
     public List<PostResponse> getForYou(String userId, int limit, int offset, String currentUserId) throws ExecutionException, InterruptedException {
         List<String> preferences = userRepository.getUserPreferences(userId);
+        System.out.println("Preferences: " + preferences);
         return postRepository.getForYou(preferences, limit, offset).stream()
                 .map(post -> mapToResponse(post, currentUserId))
                 .toList();
@@ -68,7 +69,7 @@ public class PostService {
                 post.getLikedBy().add(userId);
             }
             
-            Post updatedPost = postRepository.updateLike(post, userId);
+            Post updatedPost = postRepository.updateLike(post);
             return mapToResponse(updatedPost, userId);
             
         } catch (ExecutionException e) {

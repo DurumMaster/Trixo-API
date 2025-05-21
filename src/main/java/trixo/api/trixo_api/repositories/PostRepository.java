@@ -219,10 +219,10 @@ public class PostRepository {
         }
     }
 
-    public Post updateLike(Post post, String userId) throws ExecutionException, InterruptedException {
+    public Post updateLike(Post post) throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
         DocumentReference docRef = db.collection(COLLECTION_NAME).document(post.getId());
-        ApiFuture<WriteResult> future = docRef.update("likedBy", userId);
+        ApiFuture<WriteResult> future = docRef.update("likedBy", post.getLikedBy());
         future.get();
         return findById(post.getId());
     }

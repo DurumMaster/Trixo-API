@@ -104,7 +104,8 @@ public class PostController {
             List<PostResponse> forYouPosts = postService.getForYou(userID, limit, offset, userId);
             return ResponseEntity.ok(forYouPosts);
         } catch (ExecutionException | InterruptedException e) {
-            return ResponseEntity.status(500).body(null);
+            System.out.println("Error: " + e.getMessage());
+            return ResponseEntity.status(500).build();
         }
     }
 
@@ -136,6 +137,7 @@ public class PostController {
             List<PostResponse> posts = postService.getPostsByUserId(userID, limit, userId, offset);
             return ResponseEntity.ok(posts);
         } catch (ExecutionException | InterruptedException e) {
+            System.out.println("Error: " + e.getMessage());
             return ResponseEntity.status(500).build();
         }
     }
