@@ -37,7 +37,6 @@ public class PostRepository {
             String bucketName = StorageClient.getInstance().bucket().getName();
             for (String image : post.getImages()) {
                 if (!image.isEmpty()) {
-              
                     fileName = "posts/" + System.currentTimeMillis() + "_" + UUID.randomUUID() + ".jpg";
 
                     storage.create(
@@ -55,6 +54,7 @@ public class PostRepository {
             post.setImages(imageURLs);
         }
 
+        post.setId(FirestoreClient.getFirestore().collection(COLLECTION_NAME).document().getId());
 
         // Convertir la entidad Post a mapa de datos para Firestore
         postData.put("id", post.getId());
