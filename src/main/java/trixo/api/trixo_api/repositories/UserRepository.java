@@ -116,17 +116,13 @@ public class UserRepository {
                     try {
                         StorageClient storageClient = StorageClient.getInstance();
                         String avatarImg = "avatar_images/" + userId + "_" + System.currentTimeMillis() + ".jpg";
-                        
+
                         storageClient.bucket()
-                        .create(avatarImg,
-                        user.getAvatar_img().getBytes(),
-                        "image/jpeg"
-                        );
-                        
-                        String url = URLEncoder.encode(avatarImg, StandardCharsets.UTF_8.toString());
+                            .create(avatarImg, user.getAvatar_img().getBytes(), "image/jpeg");
+
                         String avatarUrl = "https://firebasestorage.googleapis.com/v0/b/" 
-                        + storageClient.bucket().getName() + "/o/"+ url +"?alt=media";
-                        
+                            + storageClient.bucket().getName() + "/o/" + avatarImg + "?alt=media";
+
                         user.setAvatar_img(avatarUrl);
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -154,11 +150,11 @@ public class UserRepository {
                         avatarUrl.indexOf("/o/") + 3, avatarUrl.indexOf("?alt=media")
                     );
 
-                    String decodedUrl = java.net.URLDecoder.decode(url, StandardCharsets.UTF_8.toString());
-                    StorageClient.getInstance().bucket().get(decodedUrl).delete();
+                    StorageClient.getInstance().bucket().get(url).delete();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
+
             }
             db.collection(COLLECTION_NAME).document(userId).delete();
             return true;

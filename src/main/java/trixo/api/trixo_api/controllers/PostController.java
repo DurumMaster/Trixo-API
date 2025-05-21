@@ -121,7 +121,7 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{userID}/posts}")
+    @GetMapping("/{userID}/posts")
     public ResponseEntity<List<PostResponse>> getPostByUserID(
         @PathVariable String userID,
         @RequestParam (defaultValue = "10") int limit,

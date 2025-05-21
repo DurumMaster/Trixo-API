@@ -11,9 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import trixo.api.trixo_api.entities.Post;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,27 +32,25 @@ public class PostRepository {
         if (post.getImages() != null && !post.getImages().isEmpty()) {
             List<String> imageURLs = new ArrayList<>();
             String fileName = null;
-            byte[] imageBytes = null;
-            String encodedFileName = null;
             String imageUrl = null;
             Storage storage = StorageClient.getInstance().bucket().getStorage();
             String bucketName = StorageClient.getInstance().bucket().getName();
             for (String image : post.getImages()) {
-                if (!image.isEmpty()){
+                if (!image.isEmpty()) {
+              
                     fileName = "posts/" + System.currentTimeMillis() + "_" + UUID.randomUUID() + ".jpg";
-                    imageBytes = Base64.getDecoder().decode(image);
 
                     storage.create(
                         BlobInfo.newBuilder(bucketName, fileName).build(),
-                        imageBytes
+                        image.getBytes()
                     );
-                    encodedFileName = java.net.URLEncoder.encode(fileName, StandardCharsets.UTF_8);
 
                     imageUrl = "https://firebasestorage.googleapis.com/v0/b/" 
-                    + bucketName + "/o/" + encodedFileName + "?alt=media";
-                    
+                        + bucketName + "/o/" + fileName + "?alt=media";
+
                     imageURLs.add(imageUrl);
                 }
+
             }
             post.setImages(imageURLs);
         }
