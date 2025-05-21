@@ -40,7 +40,7 @@ public class PostRepository {
                     fileName = "posts/" + System.currentTimeMillis() + "_" + UUID.randomUUID() + ".jpg";
 
                     storage.create(
-                        BlobInfo.newBuilder(bucketName, fileName).build(),
+                        BlobInfo.newBuilder(bucketName, fileName).setContentType("image/jpeg").build(),
                         image.getBytes()
                     );
 
