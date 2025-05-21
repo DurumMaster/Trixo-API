@@ -222,7 +222,7 @@ public class PostRepository {
     public Post updateLike(Post post, String userId) throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
         DocumentReference docRef = db.collection(COLLECTION_NAME).document(post.getId());
-        ApiFuture<WriteResult> future = docRef.update("likedBy", FieldValue.arrayUnion(userId));
+        ApiFuture<WriteResult> future = docRef.update("likedBy", userId);
         future.get();
         return findById(post.getId());
     }
