@@ -68,7 +68,7 @@ public class PostService {
                 post.getLikedBy().add(userId);
             }
             
-            Post updatedPost = postRepository.save(post);
+            Post updatedPost = postRepository.updateLike(post, userId);
             return mapToResponse(updatedPost, userId);
             
         } catch (ExecutionException e) {

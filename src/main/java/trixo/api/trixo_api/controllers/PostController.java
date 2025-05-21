@@ -108,7 +108,7 @@ public class PostController {
         }
     }
 
-    @PostMapping("/{postId}/like")
+    @PutMapping("/{postId}/like")
     public ResponseEntity<PostResponse> toggleLike(@PathVariable String postId) {
         String userId = null;
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
