@@ -6,6 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import trixo.api.trixo_api.dto.PostResponse;
 import trixo.api.trixo_api.entities.Post;
@@ -32,6 +33,15 @@ public class PostController {
             return ResponseEntity.ok("Post created successfully with ID: " + post.getId());
         } catch (ExecutionException | InterruptedException e) {
             return ResponseEntity.status(500).body("Error creating post: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/upload")
+    public ResponseEntity<List<String>> uploadImages(@RequestParam("file") List<MultipartFile> files) {
+        try {
+            return ResponseEntity.ok(postService.uploadImages(files));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(List.of("Error uploading images: " + e.getMessage()));
         }
     }
 

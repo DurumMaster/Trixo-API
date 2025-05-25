@@ -2,6 +2,7 @@ package trixo.api.trixo_api.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import trixo.api.trixo_api.dto.PostResponse;
 import trixo.api.trixo_api.entities.Post;
@@ -119,6 +120,10 @@ public class PostService {
 
     public boolean updatePostStatus(String postId, String status){
         return postRepository.updatePostStatus(postId, status);
+    }
+
+    public List<String> uploadImages (List<MultipartFile> images) throws ExecutionException, InterruptedException {
+        return postRepository.uploadImages(images);
     }
 
     public PostResponse mapToResponse(Post post, String currentUserId) {

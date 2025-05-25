@@ -8,6 +8,7 @@ import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.cloud.StorageClient;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.web.multipart.MultipartFile;
 
 import trixo.api.trixo_api.entities.Post;
 
@@ -202,7 +203,7 @@ public class PostRepository {
         }
     }
 
-    public boolean createReport(String postId, String reason, String userId) {
+    public boolean createReport(String postId, String userId, String reason) {
         try {
             Firestore db = FirestoreClient.getFirestore();
             DocumentReference docRef = db.collection(COLLECTION_NAME).document(postId);
@@ -225,6 +226,37 @@ public class PostRepository {
         ApiFuture<WriteResult> future = docRef.update("likedBy", post.getLikedBy());
         future.get();
         return findById(post.getId());
+    }
+
+    public List<String> uploadImages(List<MultipartFile> files) {
+        List<String> imageUrls = new ArrayList<>();
+        Storage storage = StorageClient.getInstance().bucket().getStorage();
+        String bucketName = StorageClient.getInstance().bucket().getName();
+
+        if(files != null) {
+             try{
+                 for (MultipartFile file : files) {
+                     if (!file.isEmpty()) {
+                         String fileName = "posts/" + System.currentTimeMillis() + "_" + UUID.randomUUID() + "_" + file.getOriginalFilename();
+                         storage.create(
+                             BlobInfo.newBuilder(bucketName, fileName)
+                             .setContentType(file.getContentType())
+                             .build(),
+                             file.getBytes()
+                             );
+                             String imageUrl = "https://firebasestorage.googleapis.com/v0/b/"
+                             + bucketName + "/o/" + fileName.replace("/", "%2F") + "?alt=media";
+                             imageUrls.add(imageUrl);
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return imageUrls;
+                    }
+                    return imageUrls;
+        } else {
+            return imageUrls;
+        }
     }
 
     private List<Post> executeQuery(Query query) throws ExecutionException, InterruptedException {
