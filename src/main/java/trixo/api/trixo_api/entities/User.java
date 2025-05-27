@@ -14,6 +14,7 @@ public class User {
     private String username;
     private String email;
     private String avatar_img;
+    private String bio;
 
     @JsonDeserialize(using = TimestampDeserializer.class)
     @JsonSerialize(using = TimestampSerializer.class)
@@ -49,6 +50,14 @@ public class User {
     }
     public void setAvatar_img(String avatarImg) {
         this.avatar_img = avatarImg;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
     }
 
     public List<String> getPreferences() {

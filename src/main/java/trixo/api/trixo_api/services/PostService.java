@@ -53,6 +53,12 @@ public class PostService {
                 .toList();
     }
 
+    public List<PostResponse> getPostByCaption(String caption, String currentUserId, int limit, int offset) throws ExecutionException, InterruptedException {
+        return postRepository.getPostByCaption(caption, limit, offset).stream()
+                .map(post -> mapToResponse(post, currentUserId))
+                .toList();
+    }
+
     public PostResponse toggleLike(String postId, String userId) {
         Post post;
         try {

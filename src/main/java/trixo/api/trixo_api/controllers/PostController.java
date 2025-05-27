@@ -119,6 +119,25 @@ public class PostController {
         }
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<PostResponse>> searchPosts(
+        @RequestParam String caption,
+        @RequestParam(defaultValue = "10") int limit,
+        @RequestParam(defaultValue = "0") int offset) {
+        String userId = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            userId = jwt.getSubject();
+        }
+        try {
+            List<PostResponse> posts = postService.getPostByCaption(caption, userId, limit, offset);
+            return ResponseEntity.ok(posts);
+        } catch (ExecutionException | InterruptedException e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
     @PutMapping("/{postId}/like")
     public ResponseEntity<PostResponse> toggleLike(@PathVariable String postId) {
         String userId = null;

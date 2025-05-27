@@ -106,6 +106,21 @@ public class PostRepository {
         return executeQuery(query);
     }
 
+    public List<Post> getPostByCaption(String caption, int limit, int offset) {
+        try {
+            Firestore db = FirestoreClient.getFirestore();
+            Query query = db.collection(COLLECTION_NAME)
+                    .whereGreaterThanOrEqualTo("caption", caption)
+                    .whereLessThanOrEqualTo("caption", caption + "\uf8ff")
+                    .orderBy("created_at", Query.Direction.DESCENDING)
+                    .limit(limit).offset(offset);
+            return executeQuery(query);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
     public Post findById(String postId) throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
         DocumentReference docRef = db.collection(COLLECTION_NAME).document(postId.toString());
