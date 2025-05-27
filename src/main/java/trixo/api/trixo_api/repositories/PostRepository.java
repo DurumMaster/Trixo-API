@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import trixo.api.trixo_api.entities.Post;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,37 +24,11 @@ import java.util.concurrent.ExecutionException;
 public class PostRepository {
 
     private static final String COLLECTION_NAME = "posts";
-    
+
     public Post save(Post post) throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
         DocumentReference docRef;
         Map<String, Object> postData = new HashMap<>();
-
-
-        if (post.getImages() != null && !post.getImages().isEmpty()) {
-            List<String> imageURLs = new ArrayList<>();
-            String fileName = null;
-            String imageUrl = null;
-            Storage storage = StorageClient.getInstance().bucket().getStorage();
-            String bucketName = StorageClient.getInstance().bucket().getName();
-            for (String image : post.getImages()) {
-                if (!image.isEmpty()) {
-                    fileName = "posts/" + System.currentTimeMillis() + "_" + UUID.randomUUID() + ".jpg";
-
-                    storage.create(
-                        BlobInfo.newBuilder(bucketName, fileName).setContentType("image/jpeg").build(),
-                        image.getBytes()
-                    );
-
-                    imageUrl = "https://firebasestorage.googleapis.com/v0/b/" 
-                        + bucketName + "/o/" + fileName + "?alt=media";
-
-                    imageURLs.add(imageUrl);
-                }
-
-            }
-            post.setImages(imageURLs);
-        }
 
         post.setId(FirestoreClient.getFirestore().collection(COLLECTION_NAME).document().getId());
 
@@ -98,8 +73,8 @@ public class PostRepository {
         return executeQuery(
                 db.collection(COLLECTION_NAME)
                         .orderBy("created_at", Query.Direction.DESCENDING)
-                        
-                    .limit(limit).offset(offset));
+
+                        .limit(limit).offset(offset));
     }
 
     public List<Post> getTopPosts(int limit, int offset) throws ExecutionException, InterruptedException {
@@ -107,7 +82,7 @@ public class PostRepository {
         return executeQuery(
                 db.collection(COLLECTION_NAME)
                         .orderBy("likes_count", Query.Direction.DESCENDING)
-                    .limit(limit).offset(offset));
+                        .limit(limit).offset(offset));
     }
 
     public List<Post> getRecentPosts(int limit, int offset) throws ExecutionException, InterruptedException {
@@ -115,10 +90,11 @@ public class PostRepository {
         return executeQuery(
                 db.collection(COLLECTION_NAME)
                         .orderBy("created_at", Query.Direction.DESCENDING)
-                    .limit(limit).offset(offset));
+                        .limit(limit).offset(offset));
     }
 
-    public List<Post> getForYou(List<String> preferences, int limit, int offset) throws ExecutionException, InterruptedException {
+    public List<Post> getForYou(List<String> preferences, int limit, int offset)
+            throws ExecutionException, InterruptedException {
         if (preferences == null || preferences.isEmpty()) {
             return new ArrayList<>(); // No preferences, return empty list
         }
@@ -126,7 +102,7 @@ public class PostRepository {
         Query query = db.collection(COLLECTION_NAME)
                 .whereArrayContainsAny("tags", preferences)
                 .orderBy("created_at", Query.Direction.DESCENDING)
-            .limit(limit).offset(offset);
+                .limit(limit).offset(offset);
         return executeQuery(query);
     }
 
@@ -141,7 +117,8 @@ public class PostRepository {
         return null;
     }
 
-    public List<Post> getUsersPosts(String userId, int limit, int offset) throws ExecutionException, InterruptedException {
+    public List<Post> getUsersPosts(String userId, int limit, int offset)
+            throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
         Query query = db.collection(COLLECTION_NAME)
                 .whereEqualTo("user.id", userId)
@@ -149,7 +126,8 @@ public class PostRepository {
         return executeQuery(query);
     }
 
-    public List<Post> getLikedPosts(String userId, int limit, int offset) throws ExecutionException, InterruptedException {
+    public List<Post> getLikedPosts(String userId, int limit, int offset)
+            throws ExecutionException, InterruptedException {
         Firestore db = FirestoreClient.getFirestore();
         Query query = db.collection(COLLECTION_NAME)
                 .whereArrayContains("likedBy", userId)
@@ -231,32 +209,36 @@ public class PostRepository {
     public List<String> uploadImages(List<MultipartFile> files) {
         List<String> imageUrls = new ArrayList<>();
         Storage storage = StorageClient.getInstance().bucket().getStorage();
-        String bucketName = StorageClient.getInstance().bucket().getName();
+        String bucketName = "trixo-1eacc.firebasestorage.app";
+        System.out.println(files.size());
+        if (files != null) {
+            try {
+                for (MultipartFile file : files) {
+                    if (!file.isEmpty()) {
+                        String fileName = "posts/" + UUID.randomUUID() + ".jpg";
 
-        if(files != null) {
-             try{
-                 for (MultipartFile file : files) {
-                     if (!file.isEmpty()) {
-                         String fileName = "posts/" + System.currentTimeMillis() + "_" + UUID.randomUUID() + "_" + file.getOriginalFilename();
-                         storage.create(
-                             BlobInfo.newBuilder(bucketName, fileName)
-                             .setContentType(file.getContentType())
-                             .build(),
-                             file.getBytes()
-                             );
-                             String imageUrl = "https://firebasestorage.googleapis.com/v0/b/"
-                             + bucketName + "/o/" + fileName.replace("/", "%2F") + "?alt=media";
-                             imageUrls.add(imageUrl);
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return imageUrls;
+                        String imageUrl = "https://firebasestorage.googleapis.com/v0/b/"
+                                + bucketName + "/o/" + 
+                                URLEncoder.encode(fileName, "UTF-8")
+                                .replace("+", "%20")
+                                .replace("/", "%2F")
+                                + "?alt=media";
+                                
+                        imageUrls.add(imageUrl);
+
+                        storage.create(
+                            BlobInfo.newBuilder(bucketName, fileName)
+                                    .setContentType(file.getContentType())
+                                    .build(),
+                            file.getBytes());
                     }
-                    return imageUrls;
-        } else {
-            return imageUrls;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return imageUrls;
+            }
         }
+        return imageUrls;
     }
 
     private List<Post> executeQuery(Query query) throws ExecutionException, InterruptedException {
@@ -266,9 +248,9 @@ public class PostRepository {
 
         for (QueryDocumentSnapshot doc : documents) {
             Post post = doc.toObject(Post.class);
-            if(doc.get("report") != null){
+            if (doc.get("report") != null) {
                 String status = doc.getString("report.status");
-                if(status.equals("notReported")){
+                if (status.equals("notReported")) {
                     posts.add(post);
                 }
             } else {
