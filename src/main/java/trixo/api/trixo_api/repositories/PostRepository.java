@@ -31,7 +31,7 @@ public class PostRepository {
         Map<String, Object> postData = new HashMap<>();
 
         post.setId(FirestoreClient.getFirestore().collection(COLLECTION_NAME).document().getId());
-
+        post.setComments_count(0);
         // Convertir la entidad Post a mapa de datos para Firestore
         postData.put("id", post.getId());
         postData.put("caption", post.getCaption());
