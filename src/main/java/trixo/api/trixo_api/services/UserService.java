@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import trixo.api.trixo_api.entities.User;
 import trixo.api.trixo_api.repositories.UserRepository;
@@ -32,6 +33,10 @@ public class UserService {
 
     public boolean registerPreferences(String userID, List<String> preferences) {
         return userRepository.registerPreferences(userID, preferences);
+    }
+
+    public String uploadImage(String userID, MultipartFile file) {
+        return userRepository.uploadImage(userID, file);
     }
 
     public boolean updateUser(String userID, User user) {

@@ -1,10 +1,12 @@
 package trixo.api.trixo_api.repositories;
 
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentReference;
@@ -108,31 +110,76 @@ public class UserRepository {
         try {
             Firestore db = FirestoreClient.getFirestore();
 
-            User existingUser = getUserById(userId);
-            if(!user.getAvatar_img().equals(existingUser.getAvatar_img())){
-                if (user.getAvatar_img() != null && !user.getAvatar_img().isEmpty()) {
-                    try {
-                        StorageClient storageClient = StorageClient.getInstance();
-                        String avatarImg = "avatar_images/" + userId + "_" + System.currentTimeMillis() + ".jpg";
-
-                        storageClient.bucket()
-                            .create(avatarImg, user.getAvatar_img().getBytes(), "image/jpeg");
-
-                        String avatarUrl = "https://firebasestorage.googleapis.com/v0/b/" 
-                            + storageClient.bucket().getName() + "/o/" + avatarImg + "?alt=media";
-
-                        user.setAvatar_img(avatarUrl);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        return false;
-                    }
-                }
+            Map<String, Object> updates = new HashMap<>();
+            if(user.getBio() != null){
+                updates.put("bio", user.getBio());
             }
-            db.collection(COLLECTION_NAME).document(userId).set(user);
+
+            if(user.getAvatar_img() != null){
+                updates.put("avatar_img", user.getAvatar_img());
+            }
+
+            if(user.getUsername() != null){
+                updates.put("username", user.getUsername());
+            }
+            
+            if(!updates.isEmpty()) {
+                db.collection(COLLECTION_NAME).document(userId).update(updates);
+            } else {
+                return false;
+            }
+
             return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public String uploadImage(String userId, MultipartFile file) {
+        if(file != null){
+            try {
+                StorageClient storageClient = StorageClient.getInstance();
+                String bucketName = "trixo-1eacc.firebasestorage.app";
+                String fileName = "avatar_images/" + userId + "_" + System.currentTimeMillis() + ".jpg";
+                
+                storageClient.bucket()
+                .create(fileName, file.getBytes(), "image/jpeg");
+                
+                String imageUrl = "https://firebasestorage.googleapis.com/v0/b/"
+                + bucketName + "/o/" + 
+                URLEncoder.encode(fileName, "UTF-8")
+                .replace("+", "%20")
+                .replace("/", "%2F")
+                + "?alt=media";
+                
+                deleteOldAvatar(userId);
+                return imageUrl;
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private void deleteOldAvatar(String userId) {
+        User user = getUserById(userId);
+
+        String oldImage = user.getAvatar_img();
+
+        if (oldImage != null && !oldImage.isEmpty()) {
+            try {
+                int start = oldImage.indexOf("/o/") + 3;
+                int end = oldImage.indexOf("?alt=media");
+                if (start > 2 && end > start) {
+                    String oldFileName = java.net.URLDecoder.decode(oldImage.substring(start, end), "UTF-8");
+                    StorageClient.getInstance().bucket().get(oldFileName).delete();
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 

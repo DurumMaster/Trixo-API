@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import trixo.api.trixo_api.dto.RegisterPreferencesRequest;
 import trixo.api.trixo_api.entities.User;
@@ -66,6 +67,19 @@ public class UserController {
             return ResponseEntity.ok("User preferences registered successfully");
         } else {
             return ResponseEntity.status(500).body("Error registering user preferences");
+        }
+    }
+    
+    @PostMapping("/uploadImage")
+    public ResponseEntity<String> uploadImage(
+        @PathVariable String userID,
+        @RequestBody MultipartFile file
+    ) {
+        String imageUrl = userService.uploadImage(userID, file);
+        if(imageUrl != null){
+            return ResponseEntity.ok("Image uploaded successfully: " + imageUrl);
+        } else {
+            return ResponseEntity.status(500).body("Error uploading image");
         }
     }
 
