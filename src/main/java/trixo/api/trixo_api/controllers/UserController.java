@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -70,16 +71,26 @@ public class UserController {
         }
     }
     
-    @PostMapping("/uploadImage")
+    @PostMapping("/{userID}/uploadImage")
     public ResponseEntity<String> uploadImage(
         @PathVariable String userID,
-        @RequestBody MultipartFile file
+        @RequestParam MultipartFile file
     ) {
         String imageUrl = userService.uploadImage(userID, file);
         if(imageUrl != null){
-            return ResponseEntity.ok("Image uploaded successfully: " + imageUrl);
+            return ResponseEntity.ok(imageUrl);
         } else {
             return ResponseEntity.status(500).body("Error uploading image");
+        }
+    }
+
+    @GetMapping("/{userID}/preferencesList")
+    public ResponseEntity<List<String>> getUserPreferencesList(@PathVariable String userID) {
+        List<String> preferences = userService.getUserPreferences(userID);
+        if(preferences != null){
+            return ResponseEntity.ok(preferences);
+        } else {
+            return ResponseEntity.status(404).body(null);
         }
     }
 

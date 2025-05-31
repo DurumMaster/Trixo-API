@@ -20,7 +20,7 @@ public class TrixoApiApplication {
 
 	private static void initializeFirebase() {
 		try {
-            FileInputStream serviceAccount = new FileInputStream("src\\main\\resources\\firebase-service.json");
+            FileInputStream serviceAccount = new FileInputStream("/home/ubuntu/API/firebase-service.json");
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
