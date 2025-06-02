@@ -27,7 +27,7 @@ public class Product {
     }
 
     public Product(int id, String nombre, double precio, String talla, Timestamp fechaCreacion, int stock,
-            boolean activo, String descripcion, String materiales, String envio, double valoracion) {
+            boolean activo, String descripcion, String materiales, String envio, double valoracion, String userID) {
         this.id = id;
         this.nombre = nombre;
         this.precio = precio;
@@ -35,6 +35,7 @@ public class Product {
         this.fechaCreacion = fechaCreacion;
         this.stock = stock;
         this.activo = activo;
+        this.userID = userID;
         this.descripcion = descripcion;
         this.materiales = materiales;
         this.envio = envio;

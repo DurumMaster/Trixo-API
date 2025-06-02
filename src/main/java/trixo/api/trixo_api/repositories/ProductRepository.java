@@ -11,9 +11,15 @@ import java.util.List;
 
 import org.springframework.stereotype.Repository;
 
+import com.stripe.model.Customer;
+import com.stripe.model.PaymentIntent;
+import com.stripe.param.CustomerCreateParams;
+import com.stripe.param.PaymentIntentCreateParams;
+
 import trixo.api.trixo_api.SQL.Queries;
 import trixo.api.trixo_api.SQL.SQLConnection;
 import trixo.api.trixo_api.SQL.Queries.ProductTable;
+import trixo.api.trixo_api.dto.CustomerDto;
 import trixo.api.trixo_api.dto.ProductDto;
 import trixo.api.trixo_api.entities.Product;
 import trixo.api.trixo_api.entities.Rating;
@@ -120,7 +126,8 @@ public class ProductRepository {
                     rs.getString(ProductTable.DESCRIPTION),
                     rs.getString(ProductTable.MATERIALS),
                     rs.getString(ProductTable.SHIPPING),
-                    rs.getDouble(ProductTable.RATING)
+                    rs.getDouble(ProductTable.RATING),
+                    rs.getString(ProductTable.USER_ID)
                 );
                 products.add(product);
             }
@@ -136,7 +143,6 @@ public class ProductRepository {
             }
         }
 
-        // Map products to their images
         for (Product product : products) {
             List<String> images = new ArrayList<>();
             Connection imgCon = null;
@@ -367,6 +373,145 @@ public class ProductRepository {
         }
         return ratings;
     }
-    
-}
 
+    public Customer createCustomer(String email, String name) {
+        try {
+            CustomerCreateParams params = CustomerCreateParams.builder()
+                .setEmail(email)
+                .setName(name)
+                .build();
+
+            return Customer.create(params);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    public PaymentIntent createPaymentIntent(Long amount, String currency, String customerID){
+        try{
+            PaymentIntentCreateParams.Builder builder = PaymentIntentCreateParams.builder()
+            .setAmount(amount)
+            .setCurrency(currency)
+            .setPaymentMethod("card");
+
+            if(customerID != null && !customerID.isEmpty()){
+                builder.setCustomer(customerID);
+            }
+
+            PaymentIntentCreateParams params = builder.build();
+            return PaymentIntent.create(params);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void insertUser(String id, CustomerDto request) {
+        Connection con = null;
+        PreparedStatement ps = null;
+
+        try {
+            con = SQLConnection.getConnection();
+            ps = con.prepareStatement(Queries.ADD_CLIENT);
+            ps.setString(1, id);
+            ps.setString(2, request.getEmail());
+            ps.setString(3, request.getName());
+            ps.setBoolean(4, request.isGdprConsent());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (ps != null) ps.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public CustomerDto getCustomer(String customerID) {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        CustomerDto customerDto = new CustomerDto();
+        try {
+            con = SQLConnection.getConnection();
+            ps = con.prepareStatement(Queries.GET_CLIENT_BY_ID);
+            ps.setString(1, customerID);
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                customerDto.setEmail(rs.getString(Queries.ClientTable.EMAIL));
+                customerDto.setName(rs.getString(Queries.ClientTable.NOMBRE));
+                customerDto.setGdprConsent(rs.getBoolean(Queries.ClientTable.GDPR_CONSENT));
+            }
+            return customerDto;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+    }
+
+    public void insertMethod(String customerID, String paymentMethod) {
+        Connection con = null;
+        PreparedStatement ps = null;
+        try {
+            con = SQLConnection.getConnection();
+            ps = con.prepareStatement(Queries.ADD_CLIENT_PAYMENT_METHOD);
+            ps.setString(1, customerID);
+            ps.setString(2, paymentMethod);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (ps != null) ps.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public boolean hasPaymentMethod(String customerID, String paymentMethod) {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            con = SQLConnection.getConnection();
+            ps = con.prepareStatement(Queries.GET_METHOD_BY_CLIENT_ID);
+            ps.setString(1, customerID);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                if (rs.getString("stripe_payment_method_id").equals(paymentMethod)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+    }
+}

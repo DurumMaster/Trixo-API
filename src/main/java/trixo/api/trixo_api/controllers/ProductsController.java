@@ -1,8 +1,11 @@
 package trixo.api.trixo_api.controllers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.stripe.model.Customer;
+import com.stripe.model.PaymentIntent;
+
+import trixo.api.trixo_api.dto.CustomerDto;
+import trixo.api.trixo_api.dto.PaymentDto;
 import trixo.api.trixo_api.dto.ProductDto;
 import trixo.api.trixo_api.entities.Rating;
 import trixo.api.trixo_api.services.ProductService;
@@ -104,5 +112,57 @@ public class ProductsController {
             return ResponseEntity.badRequest().body("Error deleting rating.");
         }
         return ResponseEntity.ok("Rating deleted successfully.");
+    }
+
+    //STRIPE
+
+    @PostMapping("/customer")
+    public ResponseEntity<?> createCustomer(@RequestBody CustomerDto request) {
+        try {
+            Customer customer = productService.createCustomer(request.getEmail(), request.getName());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", customer.getId());
+            response.put("email", customer.getEmail());
+            response.put("name", customer.getName());
+
+            productService.insertUser(customer.getId(), request);
+
+            return ResponseEntity.status(HttpStatus.SC_CREATED).body(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST)
+                                 .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/payments")
+    public ResponseEntity<?> createPaymentIntent(@RequestBody PaymentDto request) {
+        try {
+            PaymentIntent pi = productService.createPaymentIntent(
+                request.getAmount(),
+                request.getCurrency(),
+                request.getCustomerID()
+            );
+
+            CustomerDto customer = productService.getCustomer(request.getCustomerID());
+
+            if(customer != null){
+                if(customer.isGdprConsent()){
+                    if(!productService.hasPaymentMethod(request.getCustomerID(), pi.getPaymentMethod())){
+                        productService.insertMethod(request.getCustomerID(), pi.getPaymentMethod());
+                    }
+                }
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("paymentIntentId", pi.getId());
+            response.put("clientSecret", pi.getClientSecret());
+            return ResponseEntity.status(HttpStatus.SC_CREATED).body(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST)
+                                 .body(Map.of("error", e.getMessage()));
+        }
     }
 }
