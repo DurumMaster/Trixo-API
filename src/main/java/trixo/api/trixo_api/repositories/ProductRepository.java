@@ -14,7 +14,9 @@ import org.springframework.stereotype.Repository;
 import trixo.api.trixo_api.SQL.Queries;
 import trixo.api.trixo_api.SQL.SQLConnection;
 import trixo.api.trixo_api.SQL.Queries.ProductTable;
+import trixo.api.trixo_api.dto.ProductDto;
 import trixo.api.trixo_api.entities.Product;
+import trixo.api.trixo_api.entities.Rating;
 
 @Repository
 public class ProductRepository {
@@ -56,7 +58,6 @@ public class ProductRepository {
             if (generatedKeys.next()) {
                 int productoId = generatedKeys.getInt(1);
 
-                // Insertar imágenes
                 psImage = con.prepareStatement(Queries.ADD_IMAGE);
                 for (String imageUrl : images) {
                     psImage.setInt(1, productoId);
@@ -96,19 +97,19 @@ public class ProductRepository {
         }
     }
 
-    public List<Product> getActiveProducts() {
+    public List<ProductDto> getActiveProducts() {
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         List<Product> products = new ArrayList<>();
+        List<ProductDto> productDtos = new ArrayList<>();
 
         try {
             con = SQLConnection.getConnection();
             ps = con.prepareStatement(Queries.GET_ACTIVE_PRODUCTS);
             rs = ps.executeQuery();
-            Product product = null;
             while (rs.next()) {
-                product = new Product(
+                Product product = new Product(
                     rs.getInt(ProductTable.ID),
                     rs.getString(ProductTable.NAME),
                     rs.getDouble(ProductTable.PRICE),
@@ -134,7 +135,36 @@ public class ProductRepository {
                 e.printStackTrace();
             }
         }
-        return products;
+
+        // Map products to their images
+        for (Product product : products) {
+            List<String> images = new ArrayList<>();
+            Connection imgCon = null;
+            PreparedStatement imgPs = null;
+            ResultSet imgRs = null;
+            try {
+                imgCon = SQLConnection.getConnection();
+                imgPs = imgCon.prepareStatement(Queries.GET_IMAGES_BY_PRODUCT_ID);
+                imgPs.setInt(1, product.getId());
+                imgRs = imgPs.executeQuery();
+                while (imgRs.next()) {
+                    images.add(imgRs.getString("url"));
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (imgRs != null) imgRs.close();
+                    if (imgPs != null) imgPs.close();
+                    if (imgCon != null) imgCon.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            productDtos.add(new ProductDto(product, images));
+        }
+
+        return productDtos;
     }
 
     public boolean reduceStockBy1(int productId) {
@@ -167,14 +197,18 @@ public class ProductRepository {
 
         try {
             con = SQLConnection.getConnection();
-            ps = con.prepareStatement(Queries.GET_PRODUCT_RATING);
+            ps = con.prepareStatement(Queries.GET_PRODUCT_AVG_RATING);
             ps.setInt(1, productId);
             rs = ps.executeQuery();
 
             if (rs.next()) {
-                return rs.getDouble("average_rating");
+                double avg = rs.getDouble("average_rating");
+                if (rs.wasNull()) {
+                    return 0.0;
+                }
+                return avg;
             } else {
-                return 0.0; // Si no hay valoraciones, retorna 0
+                return 0.0;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -211,6 +245,127 @@ public class ProductRepository {
                 e.printStackTrace();
             }
         }
+    }
+
+    public boolean addRating(Rating rating, int productId) {
+        Connection con = null;
+        PreparedStatement psRating = null;
+        PreparedStatement psProductRating = null;
+        ResultSet generatedKeys = null;
+
+        try {
+            con = SQLConnection.getConnection();
+            con.setAutoCommit(false);
+
+            // Insertar rating
+            psRating = con.prepareStatement(Queries.ADD_RATING, Statement.RETURN_GENERATED_KEYS);
+            psRating.setString(1, rating.getMessage());
+            psRating.setString(2, rating.getUserID());
+            psRating.setDouble(3, rating.getRating());
+            int rowsAffected = psRating.executeUpdate();
+
+            if (rowsAffected == 0) {
+                con.rollback();
+                return false;
+            }
+
+            generatedKeys = psRating.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                int ratingId = generatedKeys.getInt(1);
+
+                // Insertar relación producto-rating
+                psProductRating = con.prepareStatement(Queries.ADD_PRODUCT_RATING);
+                psProductRating.setInt(1, productId);
+                psProductRating.setInt(2, ratingId);
+                psProductRating.executeUpdate();
+
+                con.commit();
+                return true;
+
+            } else {
+                con.rollback();
+                return false;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            try {
+                if (con != null) con.rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            return false;
+        } finally {
+            try {
+                if (generatedKeys != null) generatedKeys.close();
+                if (psRating != null) psRating.close();
+                if (psProductRating != null) psProductRating.close();
+                if (con != null) {
+                    con.setAutoCommit(true);
+                    con.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public boolean deleteRating(int ratingId) {
+        Connection con = null;
+        PreparedStatement ps = null;
+
+        try {
+            con = SQLConnection.getConnection();
+            ps = con.prepareStatement(Queries.DELETE_RATING);
+            ps.setInt(1, ratingId);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (ps != null) ps.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public List<Rating> getProductRatings(int productId) {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        List<Rating> ratings = new ArrayList<>();
+
+        try {
+            con = SQLConnection.getConnection();
+            ps = con.prepareStatement(Queries.GET_PRODUCTS_RATING);
+            ps.setInt(1, productId);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Rating rating = new Rating(
+                    rs.getInt(Queries.RatingTable.ID),
+                    rs.getString(Queries.RatingTable.MESSAGE),
+                    rs.getDouble(Queries.RatingTable.RATING),
+                    rs.getString(Queries.RatingTable.USER_ID)
+                );
+                ratings.add(rating);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return ratings;
     }
     
 }

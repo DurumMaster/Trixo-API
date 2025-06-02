@@ -20,6 +20,34 @@ public class Queries {
         ImageProductTable.URL + 
         ") VALUES (?, ?)";
 
+    public static final String ADD_RATING = "INSERT INTO " + RatingTable.RATINGS_TABLE + " (" +
+        RatingTable.MESSAGE + ", " +
+        RatingTable.USER_ID + ", " +
+        RatingTable.RATING + 
+        ") VALUES (?, ?, ?)";
+
+    public static final String ADD_PRODUCT_RATING = "INSERT INTO " + ProductRatingTable.PRODUCT_RATINGS_TABLE + " (" +
+        ProductRatingTable.PRODUCT_ID + ", " +
+        ProductRatingTable.RATING_ID + 
+        ") VALUES (?, ?)";
+
+    public static final String GET_PRODUCT_AVG_RATING = "SELECT AVG(" + RatingTable.RATING + ") AS average_rating " +
+        "FROM " + RatingTable.RATINGS_TABLE + 
+        " INNER JOIN " + ProductRatingTable.PRODUCT_RATINGS_TABLE + 
+        " ON " + RatingTable.ID + " = " + ProductRatingTable.RATING_ID +
+        " WHERE " + ProductRatingTable.PRODUCT_ID + " = ?";
+
+    public static final String GET_PRODUCTS_RATING = "SELECT * FROM " + ProductRatingTable.PRODUCT_RATINGS_TABLE + 
+        " INNER JOIN " + RatingTable.RATINGS_TABLE + 
+        " ON " + ProductRatingTable.RATING_ID + " = " + RatingTable.ID +
+        " WHERE " + ProductRatingTable.PRODUCT_ID + " = ?";
+
+    public static final String DELETE_RATING = "DELETE FROM " + RatingTable.RATINGS_TABLE + 
+        " WHERE " + RatingTable.ID + " = ?";
+
+    public static final String GET_IMAGES_BY_PRODUCT_ID = "SELECT * FROM " + ImageProductTable.IMAGE_PRODUCTS_TABLE +
+        " WHERE " + ImageProductTable.PRODUCT_ID + " = ?";
+
     public static final String GET_ACTIVE_PRODUCTS = "SELECT * FROM " + ProductTable.PRODUCTS_TABLE +
         " WHERE " + ProductTable.ACTIVE + " = true";
 
@@ -56,5 +84,19 @@ public class Queries {
         public static final String ID = "id";
         public static final String PRODUCT_ID = "producto_id";
         public static final String URL = "url";
+    }
+
+    public static class RatingTable {
+        public static final String RATINGS_TABLE = "valoraciones";
+        public static final String ID = "id";
+        public static final String MESSAGE = "mensaje";
+        public static final String USER_ID = "user_id";
+        public static final String RATING = "valoracion";
+    }
+
+    public static class ProductRatingTable {
+        public static final String PRODUCT_RATINGS_TABLE = "productos_valoraciones";
+        public static final String PRODUCT_ID = "id_producto";
+        public static final String RATING_ID = "id_valoracion";
     }
 }

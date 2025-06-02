@@ -4,9 +4,16 @@ import java.util.List;
 
 import trixo.api.trixo_api.entities.Product;
 
-public class ProductRegistration {
+public class ProductDto {
     private Product product;
     private List<String> images;
+
+    public ProductDto() {}
+
+    public ProductDto(Product product, List<String> images) {
+        this.product = product;
+        this.images = images;
+    }
 
     public Product getProduct() {
         return product;

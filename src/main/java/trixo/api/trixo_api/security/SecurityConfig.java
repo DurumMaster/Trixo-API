@@ -2,9 +2,13 @@ package trixo.api.trixo_api.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+
+import com.google.api.Http;
+
 import org.springframework.security.config.http.SessionCreationPolicy;
 
 @Configuration
@@ -17,6 +21,7 @@ public class SecurityConfig {
             //     //.requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
             //     //.requestMatchers(HttpMethod.POST, "/api/posts/**").permitAll()
             //     //.requestMatchers(HttpMethod.POST, "/api/users/**").permitAll()
+            //     //.requestMatchers(HttpMethod.POST, "api/products/**").permitAll()
                  .anyRequest().permitAll()
             )
             .oauth2ResourceServer(oauth2 -> oauth2

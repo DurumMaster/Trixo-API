@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import trixo.api.trixo_api.dto.ProductRegistration;
-import trixo.api.trixo_api.entities.Product;
+import trixo.api.trixo_api.dto.ProductDto;
+import trixo.api.trixo_api.entities.Rating;
 import trixo.api.trixo_api.services.ProductService;
 
 @RestController
@@ -25,8 +26,8 @@ public class ProductsController {
     private ProductService productService;
 
     @GetMapping("/active")
-    public ResponseEntity<List<Product>> getActiveProducts() {
-        List<Product> products = new ArrayList<>();
+    public ResponseEntity<List<ProductDto>> getActiveProducts() {
+        List<ProductDto> products = new ArrayList<>();
         products = productService.getActiveProducts();
         if (products.isEmpty()) {
             return ResponseEntity.badRequest().body(products);
@@ -44,16 +45,16 @@ public class ProductsController {
     }
 
     @PutMapping("/{productId}/reduce")
-    public ResponseEntity<String> reduceProductStock(@PathVariable int productId) {
+    public ResponseEntity<Boolean> reduceProductStock(@PathVariable int productId) {
         boolean success = productService.reduceProductStock(productId);
         if (!success) {
-            return ResponseEntity.badRequest().body("Error reducing stock for product with ID: " + productId);
+            return ResponseEntity.badRequest().body(success);
         }
-        return ResponseEntity.ok("Stock reduced successfully for product with ID: " + productId);
+        return ResponseEntity.ok(success);
     }
 
     @PostMapping
-    public ResponseEntity<String> addProduct(@RequestBody ProductRegistration product) {
+    public ResponseEntity<String> addProduct(@RequestBody ProductDto product) {
 
         boolean res = productService.addProduct(product.getProduct(), product.getImages());
         if (!res) {
@@ -65,16 +66,43 @@ public class ProductsController {
 
     @PutMapping("/inactive")
     public ResponseEntity<String> deactivateProducts(){
-        List<Product> products = productService.getActiveProducts();
+        List<ProductDto> products = productService.getActiveProducts();
         if (products.isEmpty()) {
             return ResponseEntity.badRequest().body("No active products to deactivate.");
         }
-        for (Product product : products) {
-            boolean success = productService.setActiveToInactive(product.getId());
+        for (ProductDto product : products) {
+            boolean success = productService.setActiveToInactive(product.getProduct().getId());
             if (!success) {
-                return ResponseEntity.badRequest().body("Error deactivating product with ID: " + product.getId());
+                return ResponseEntity.badRequest().body("Error deactivating product with ID: " + product.getProduct().getId());
             }
         }
         return ResponseEntity.ok("All active products have been deactivated successfully.");
+    }
+
+    @GetMapping("/{productId}/ratings")
+    public ResponseEntity<List<Rating>> getRatingsByProductId(@PathVariable int productId) {
+        List<Rating> ratings = productService.getRatingsByProductId(productId);
+        if (ratings.isEmpty()) {
+            return ResponseEntity.badRequest().body(ratings);
+        }
+        return ResponseEntity.ok(ratings);
+    }
+
+    @PostMapping("/{productId}/ratings")
+    public ResponseEntity<String> addRating(@PathVariable int productId, @RequestBody Rating rating) {
+        boolean success = productService.addRating(rating, productId);
+        if (!success) {
+            return ResponseEntity.badRequest().body("Error adding rating.");
+        }
+        return ResponseEntity.ok("Rating added successfully.");
+    }
+
+    @DeleteMapping("/{ratingId}/rating")
+    public ResponseEntity<String> deleteRating(@PathVariable int ratingId) {
+        boolean success = productService.deleteRating(ratingId);
+        if (!success) {
+            return ResponseEntity.badRequest().body("Error deleting rating.");
+        }
+        return ResponseEntity.ok("Rating deleted successfully.");
     }
 }
