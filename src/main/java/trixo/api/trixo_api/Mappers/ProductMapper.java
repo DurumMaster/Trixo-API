@@ -21,6 +21,7 @@ public class ProductMapper {
             product.getDescripcion(),
             product.getMateriales(),
             product.getEnvio(),
+            product.getUserID(),
             product.getValoracion(),
             product.getImagenes().stream().map(Image::getUrl).collect(Collectors.toList())
         );
@@ -38,6 +39,7 @@ public class ProductMapper {
         product.setDescripcion(dto.getDescripcion());
         product.setMateriales(dto.getMateriales());
         product.setEnvio(dto.getEnvio());
+        product.setUserID(dto.getUserID());
         product.setValoracion(dto.getValoracion());
         // Las imágenes se agregan en el servicio addProduct
         return product;

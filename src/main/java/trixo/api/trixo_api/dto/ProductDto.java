@@ -14,6 +14,7 @@ public class ProductDto {
     private String descripcion;
     private String materiales;
     private String envio;
+    private String userID;
     private double valoracion;
     private List<String> images;
 
@@ -21,7 +22,7 @@ public class ProductDto {
 
     public ProductDto(int id, String nombre, double precio, String talla,
                       LocalDateTime fechaCreacion, int stock, boolean activo,
-                      String descripcion, String materiales, String envio,
+                      String descripcion, String materiales, String envio, String userID,
                       double valoracion, List<String> images) {
         this.id = id;
         this.nombre = nombre;
@@ -33,6 +34,7 @@ public class ProductDto {
         this.descripcion = descripcion;
         this.materiales = materiales;
         this.envio = envio;
+        this.userID = userID;
         this.valoracion = valoracion;
         this.images = images;
     }
@@ -73,4 +75,12 @@ public class ProductDto {
 
     public List<String> getImages() { return images; }
     public void setImages(List<String> images) { this.images = images; }
+
+    public String getUserID() {
+        return userID;
+    }
+
+    public void setUserID(String userID) {
+        this.userID = userID;
+    }
 }
