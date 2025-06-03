@@ -20,11 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.stripe.model.Customer;
 import com.stripe.model.PaymentIntent;
 
+import trixo.api.trixo_api.Mappers.ProductMapper;
 import trixo.api.trixo_api.dto.CustomerDto;
 import trixo.api.trixo_api.dto.PaymentDto;
 import trixo.api.trixo_api.dto.ProductDto;
 import trixo.api.trixo_api.entities.Rating;
 import trixo.api.trixo_api.services.ProductService;
+import trixo.api.trixo_api.services.StripeService;
 
 @RestController
 @RequestMapping("/api/products")
@@ -32,6 +34,9 @@ public class ProductsController {
     
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private StripeService stripeService;
 
     @GetMapping("/active")
     public ResponseEntity<List<ProductDto>> getActiveProducts() {
@@ -64,7 +69,7 @@ public class ProductsController {
     @PostMapping
     public ResponseEntity<String> addProduct(@RequestBody ProductDto product) {
 
-        boolean res = productService.addProduct(product.getProduct(), product.getImages());
+        boolean res = productService.addProduct(ProductMapper.toEntity(product), product.getImages());
         if (!res) {
             return ResponseEntity.badRequest().body("Error adding product.");
         }
@@ -79,9 +84,9 @@ public class ProductsController {
             return ResponseEntity.badRequest().body("No active products to deactivate.");
         }
         for (ProductDto product : products) {
-            boolean success = productService.setActiveToInactive(product.getProduct().getId());
+            boolean success = productService.setActiveToInactive(product.getId());
             if (!success) {
-                return ResponseEntity.badRequest().body("Error deactivating product with ID: " + product.getProduct().getId());
+                return ResponseEntity.badRequest().body("Error deactivating product with ID: " + product.getId());
             }
         }
         return ResponseEntity.ok("All active products have been deactivated successfully.");
@@ -119,7 +124,7 @@ public class ProductsController {
     @PostMapping("/customer")
     public ResponseEntity<?> createCustomer(@RequestBody CustomerDto request) {
         try {
-            Customer customer = productService.createCustomer(request.getEmail(), request.getName());
+            Customer customer = stripeService.createCustomer(request.getEmail(), request.getName());
             
             Map<String, Object> response = new HashMap<>();
             response.put("id", customer.getId());
@@ -136,13 +141,14 @@ public class ProductsController {
         }
     }
 
-    @PostMapping("/payments")
-    public ResponseEntity<?> createPaymentIntent(@RequestBody PaymentDto request) {
+    @PostMapping("{paymentMethod}/payments")
+    public ResponseEntity<?> createPaymentIntent(@RequestBody PaymentDto request, @PathVariable String paymentMethod) {
         try {
-            PaymentIntent pi = productService.createPaymentIntent(
+            PaymentIntent pi = stripeService.createPaymentIntent(
                 request.getAmount(),
                 request.getCurrency(),
-                request.getCustomerID()
+                request.getCustomerID(),
+                paymentMethod
             );
 
             CustomerDto customer = productService.getCustomer(request.getCustomerID());
