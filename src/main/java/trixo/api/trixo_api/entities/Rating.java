@@ -2,6 +2,8 @@ package trixo.api.trixo_api.entities;
 
 import java.sql.Timestamp;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.*;
@@ -28,7 +30,8 @@ public class Rating {
     @JsonBackReference
     private Product product;
 
-    @Column(name = "fecha_creacion", nullable = false)
+    @CreationTimestamp
+    @Column(name = "fecha_creacion", insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp fecha_creacion;
 
     public Rating() {
