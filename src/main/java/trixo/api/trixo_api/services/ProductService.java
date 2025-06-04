@@ -59,6 +59,13 @@ public class ProductService {
         List<Product> products = productRepository.findActiveProductsWithImages();
         return products.stream().map(ProductMapper::toDto).toList();
     }
+
+    @Transactional(readOnly = true)
+    public String getCustomerIdByEmail(String email) {
+        return customerRepository.findByEmail(email)
+            .map(Customer::getStripeCustomerId)
+            .orElseThrow(() -> new RuntimeException("Customer not found"));
+    }
     
     public boolean deleteRating(int ratingId) {
         if (ratingRepository.existsById(ratingId)) {

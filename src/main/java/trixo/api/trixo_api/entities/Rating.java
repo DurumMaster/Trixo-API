@@ -1,5 +1,7 @@
 package trixo.api.trixo_api.entities;
 
+import java.sql.Timestamp;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.*;
@@ -26,14 +28,18 @@ public class Rating {
     @JsonBackReference
     private Product product;
 
+    @Column(name = "fecha_creacion", nullable = false)
+    private Timestamp fecha_creacion;
+
     public Rating() {
     }
 
-    public Rating(int id, String message, double rating, String userID) {
+    public Rating(int id, String message, double rating, String userID, Timestamp fecha_creacion) {
         this.id = id;
         this.message = message;
         this.rating = rating;
         this.userID = userID;
+        this.fecha_creacion = fecha_creacion;
     }
 
     // Getters
@@ -53,9 +59,17 @@ public class Rating {
         return userID;
     }
 
+    public Timestamp getFecha_creacion() {
+        return fecha_creacion;
+    }
+
     // Setters
     public void setId(int id) {
         this.id = id;
+    }
+
+    public void setFecha_creacion(Timestamp fecha_creacion) {
+        this.fecha_creacion = fecha_creacion;
     }
 
     public void setMessage(String message) {
