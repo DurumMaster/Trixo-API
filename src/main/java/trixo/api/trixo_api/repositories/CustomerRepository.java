@@ -16,4 +16,7 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
 
     @Query("SELECT c FROM Customer c WHERE c.email = ?1")
     boolean existsByEmail(String email);
+
+    @Query("SELECT c FROM Customer c WHERE c.email = ?1")
+    Optional<Customer> findByEmail(String email);
 }

@@ -124,7 +124,7 @@ public class ProductsController {
     @PostMapping("/customer")
     public ResponseEntity<?> createCustomer(@RequestBody CustomerDto request) {
         try {
-            Customer customer = stripeService.createCustomer(request.getEmail(), request.getName());
+            Customer customer = stripeService.createCustomer(request);
             
             Map<String, Object> response = new HashMap<>();
             response.put("id", customer.getId());
@@ -145,9 +145,7 @@ public class ProductsController {
     public ResponseEntity<?> createPaymentIntent(@RequestBody PaymentDto request, @PathVariable String paymentMethod) {
         try {
             PaymentIntent pi = stripeService.createPaymentIntent(
-                request.getAmount(),
-                request.getCurrency(),
-                request.getCustomerID(),
+                request,
                 paymentMethod
             );
 
@@ -170,5 +168,15 @@ public class ProductsController {
             return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST)
                                  .body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @GetMapping("/{email}/customer")
+    public ResponseEntity<CustomerDto> getCustomer(@PathVariable String email) {
+        String customerId = productService.getCustomerIdByEmail(email);
+        CustomerDto customer = stripeService.getStripeCustomer(customerId);
+        if (customer == null) {
+            return ResponseEntity.status(HttpStatus.SC_NOT_FOUND).body(null);
+        }
+        return ResponseEntity.ok(customer);
     }
 }
