@@ -1,5 +1,6 @@
 package trixo.api.trixo_api.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.stripe.model.Customer;
@@ -10,9 +11,14 @@ import com.stripe.param.PaymentIntentCreateParams;
 import trixo.api.trixo_api.dto.AddressDto;
 import trixo.api.trixo_api.dto.CustomerDto;
 import trixo.api.trixo_api.dto.PaymentDto;
+import trixo.api.trixo_api.entities.PaymentMethod;
+import trixo.api.trixo_api.repositories.PaymentRepository;
 
 @Service
 public class StripeService {
+
+    @Autowired
+    private PaymentRepository paymentRepository;
     
     public Customer createCustomer(CustomerDto customerDto) {
         try {
@@ -67,7 +73,7 @@ public class StripeService {
     public PaymentIntent createPaymentIntent(PaymentDto dto, String paymentMethod) {
         try {
             PaymentIntentCreateParams.Builder builder = PaymentIntentCreateParams.builder()
-                .setAmount(dto.getAmount())
+                .setAmount((long) dto.getAmount())
                 .setCurrency(dto.getCurrency())
                 .setPaymentMethod(paymentMethod)
                 .setConfirm(true)
@@ -82,9 +88,10 @@ public class StripeService {
         }
     }
 
-    public PaymentIntent getPaymentIntent(String paymentIntentId) {
+    public PaymentIntent getPaymentIntent(String customerID) {
         try {
-            return PaymentIntent.retrieve(paymentIntentId);
+            PaymentMethod pm = paymentRepository.findByCliente_StripeCustomerId(customerID);
+            return PaymentIntent.retrieve(pm.getStripePaymentMethodId());
         } catch (Exception e) {
             e.printStackTrace();
             return null;

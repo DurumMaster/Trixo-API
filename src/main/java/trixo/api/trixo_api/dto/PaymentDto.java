@@ -1,13 +1,13 @@
 package trixo.api.trixo_api.dto;
 
 public class PaymentDto {
-    private Long amount;
+    private int amount;
     private String currency;
     private String customerID;
 
     public PaymentDto() {}
 
-    public Long getAmount() {
+    public int getAmount() {
         return amount;
     }
 
@@ -19,7 +19,7 @@ public class PaymentDto {
         return customerID;
     }
 
-    public void setAmount(Long amount) {
+    public void setAmount(int amount) {
         this.amount = amount;
     }
 

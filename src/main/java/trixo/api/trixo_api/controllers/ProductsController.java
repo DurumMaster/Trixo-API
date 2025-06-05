@@ -144,10 +144,19 @@ public class ProductsController {
     @PostMapping("{paymentMethod}/payments")
     public ResponseEntity<?> createPaymentIntent(@RequestBody PaymentDto request, @PathVariable String paymentMethod) {
         try {
-            PaymentIntent pi = stripeService.createPaymentIntent(
-                request,
-                paymentMethod
-            );
+
+        Map<String, Object> automaticPaymentMethods = new HashMap<>();
+        automaticPaymentMethods.put("enabled", true);
+        automaticPaymentMethods.put("allow_redirects", "never"); // 🔑 evita los métodos que requieren redirección
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("amount", 100); // o el valor que uses
+        params.put("currency", "eur"); // o "usd"
+        params.put("customer", request.getCustomerID());
+        params.put("payment_method", paymentMethod);
+        params.put("automatic_payment_methods", automaticPaymentMethods); // 👈 esto es nuevo
+
+        PaymentIntent pi = PaymentIntent.create(params);
 
             CustomerDto customer = productService.getCustomer(request.getCustomerID());
 
@@ -178,5 +187,20 @@ public class ProductsController {
             return ResponseEntity.status(HttpStatus.SC_NOT_FOUND).body(null);
         }
         return ResponseEntity.ok(customer);
+    }
+
+    @GetMapping("/{customerId}/payment-method")
+    public ResponseEntity<Boolean> getPaymentIntent(@PathVariable String customerId) {
+        try {
+            PaymentIntent paymentIntent = stripeService.getPaymentIntent(customerId);
+            if (paymentIntent == null) {
+                return ResponseEntity.status(HttpStatus.SC_NOT_FOUND).body(false);
+            } else {
+                return ResponseEntity.ok(true);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST)
+                                 .body(null);
+        }
     }
 }
