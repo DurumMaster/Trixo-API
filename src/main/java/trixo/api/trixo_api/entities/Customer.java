@@ -100,4 +100,8 @@ public class Customer {
     public void setMetodosPago(List<PaymentMethod> metodosPago) {
         this.metodosPago = metodosPago;
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

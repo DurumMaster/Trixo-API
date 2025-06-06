@@ -8,7 +8,7 @@ import trixo.api.trixo_api.entities.PaymentMethod;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<PaymentMethod, Integer> {
-    @Query("SELECT pm FROM PaymentMethod pm WHERE pm.cliente.stripeCustomerId = ?1 AND pm.stripePaymentMethodId = ?2")
+    @Query("SELECT COUNT(pm) > 0 FROM PaymentMethod pm WHERE pm.cliente.stripeCustomerId = ?1 AND pm.stripePaymentMethodId = ?2")
     boolean existsByCliente_StripeCustomerIdAndStripePaymentMethodId(String customerId, String paymentMethodId);
 
     @Query("SELECT pm FROM PaymentMethod pm WHERE pm.cliente.stripeCustomerId = ?1")

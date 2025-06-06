@@ -1,5 +1,8 @@
 package trixo.api.trixo_api.services;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -97,4 +100,33 @@ public class StripeService {
             return null;
         }
     }
+
+    public boolean updateCustomer(String customerId, CustomerDto customerDto) {
+        try {
+            Customer customer = Customer.retrieve(customerId);
+            Map<String, Object> params = new HashMap<>();
+            params.put("email", customerDto.getEmail());
+            params.put("name", customerDto.getName());
+            params.put("phone", customerDto.getPhone());
+            if (customerDto.getAddress() != null) {
+                Map<String, Object> addressParams = new HashMap<>();
+                addressParams.put("line1", customerDto.getAddress().getLine1());
+                addressParams.put("line2", customerDto.getAddress().getLine2());
+                addressParams.put("city", customerDto.getAddress().getCity());
+                addressParams.put("state", customerDto.getAddress().getState());
+                addressParams.put("postal_code", customerDto.getAddress().getPostalCode());
+                addressParams.put("country", customerDto.getAddress().getCountry());
+                params.put("address", addressParams);
+            } else {
+                params.put("address", null);
+            }
+
+            customer.update(params);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
+

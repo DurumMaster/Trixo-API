@@ -144,19 +144,19 @@ public class ProductsController {
     @PostMapping("{paymentMethod}/payments")
     public ResponseEntity<?> createPaymentIntent(@RequestBody PaymentDto request, @PathVariable String paymentMethod) {
         try {
+            Map<String, Object> automaticPaymentMethods = new HashMap<>();
+            automaticPaymentMethods.put("enabled", true);
+            automaticPaymentMethods.put("allow_redirects", "never"); // 🔑 evita los métodos que requieren redirección
 
-        Map<String, Object> automaticPaymentMethods = new HashMap<>();
-        automaticPaymentMethods.put("enabled", true);
-        automaticPaymentMethods.put("allow_redirects", "never"); // 🔑 evita los métodos que requieren redirección
+            Map<String, Object> params = new HashMap<>();
+            params.put("amount", request.getAmount()); // o el valor que uses
+            params.put("currency", "eur"); // o "usd"
+            params.put("customer", request.getCustomerID());
+            params.put("payment_method", paymentMethod);
+            params.put("setup_future_usage", "off_session");
+            params.put("automatic_payment_methods", automaticPaymentMethods); // 👈 esto es nuevo
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("amount", 100); // o el valor que uses
-        params.put("currency", "eur"); // o "usd"
-        params.put("customer", request.getCustomerID());
-        params.put("payment_method", paymentMethod);
-        params.put("automatic_payment_methods", automaticPaymentMethods); // 👈 esto es nuevo
-
-        PaymentIntent pi = PaymentIntent.create(params);
+            PaymentIntent pi = PaymentIntent.create(params);
 
             CustomerDto customer = productService.getCustomer(request.getCustomerID());
 
@@ -174,6 +174,7 @@ public class ProductsController {
             return ResponseEntity.status(HttpStatus.SC_CREATED).body(response);
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST)
                                  .body(Map.of("error", e.getMessage()));
         }
@@ -201,6 +202,20 @@ public class ProductsController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST)
                                  .body(null);
+        }
+    }
+
+    @PutMapping("/{customerId}/customer")
+    public ResponseEntity<String> updateCustomer(@PathVariable String customerId, @RequestBody CustomerDto customerDto) {
+        try {
+            boolean updated = stripeService.updateCustomer(customerId, customerDto);
+            if (!updated) {
+                return ResponseEntity.status(HttpStatus.SC_NOT_FOUND).body("Customer not found.");
+            }
+            return ResponseEntity.ok("Customer updated successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST)
+                                 .body("Error updating customer: " + e.getMessage());
         }
     }
 }
