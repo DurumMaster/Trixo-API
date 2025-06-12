@@ -5,6 +5,7 @@ import trixo.api.trixo_api.entities.Image;
 import trixo.api.trixo_api.entities.Product;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 public class ProductMapper {
@@ -15,7 +16,9 @@ public class ProductMapper {
             product.getNombre(),
             product.getPrecio(),
             product.getTalla(),
-            product.getFechaCreacion().toLocalDateTime(),
+            product.getFechaCreacion() != null
+                ? product.getFechaCreacion().toLocalDateTime()
+                : LocalDateTime.now(),
             product.getStock(),
             product.isActivo(),
             product.getDescripcion(),
@@ -33,7 +36,11 @@ public class ProductMapper {
         product.setNombre(dto.getNombre());
         product.setPrecio(dto.getPrecio());
         product.setTalla(dto.getTalla());
-        product.setFechaCreacion(Timestamp.valueOf(dto.getFechaCreacion()));
+        if (dto.getFechaCreacion() != null) {
+            product.setFechaCreacion(Timestamp.valueOf(dto.getFechaCreacion()));
+        } else {
+            product.setFechaCreacion(Timestamp.from(java.time.Instant.now()));
+        }
         product.setStock(dto.getStock());
         product.setActivo(dto.isActivo());
         product.setDescripcion(dto.getDescripcion());

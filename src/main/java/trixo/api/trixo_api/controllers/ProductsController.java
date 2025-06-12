@@ -68,7 +68,8 @@ public class ProductsController {
 
     @PostMapping
     public ResponseEntity<String> addProduct(@RequestBody ProductDto product) {
-
+            System.out.println("Nombre recibido en DTO: " + product.getNombre());
+    System.out.println("DTO completo: " + product); 
         boolean res = productService.addProduct(ProductMapper.toEntity(product), product.getImages());
         if (!res) {
             return ResponseEntity.badRequest().body("Error adding product.");

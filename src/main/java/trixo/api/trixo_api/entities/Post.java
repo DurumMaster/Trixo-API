@@ -22,6 +22,7 @@ public class Post {
     private Timestamp created_at;
 
     private Integer comments_count;
+    private Integer likes_count;
     private List<String> tags = new ArrayList<String>();
     private User user;
     private Report report;
@@ -96,6 +97,14 @@ public class Post {
 
     public void setReport(Report report) {
         this.report = report;
+    }
+
+    public Integer getLikes_count() {
+        return likes_count;
+    }
+
+    public void setLikes_count(Integer likes_count) {
+        this.likes_count = likes_count;
     }
 
 }

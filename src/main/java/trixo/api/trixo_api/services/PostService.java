@@ -143,7 +143,7 @@ public class PostService {
             post.getUser(),
             post.getReport(),
             currentUserId != null ? post.getLikedBy().contains(currentUserId) : false,
-            post.getLikedBy().size()
+            post.getLikes_count()
         );
     }
 }
