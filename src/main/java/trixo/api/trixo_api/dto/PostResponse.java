@@ -29,7 +29,7 @@ public class PostResponse {
     private boolean isLiked;
     
     @JsonProperty("likes_count")
-    private int likesCount;
+    private Integer likesCount;
 
     // Constructor
     public PostResponse(String id, 
@@ -41,7 +41,7 @@ public class PostResponse {
                        User user,
                        Report report,
                        boolean isLiked, 
-                       int likesCount) {
+                       Integer likesCount) {
         this.id = id;
         this.caption = caption;
         this.images = images;
@@ -64,7 +64,7 @@ public class PostResponse {
     public User getUser() { return user; }
     public Report getReport() { return report; }
     public boolean isLiked() { return isLiked; }
-    public int getLikesCount() { return likesCount; }
+    public Integer getLikesCount() { return likesCount; }
 
     // Setters
     public void setId(String id) { this.id = id; }
@@ -76,5 +76,5 @@ public class PostResponse {
     public void setUser(User user) { this.user = user; }
     public void setReport(Report report) { this.report = report; }
     public void setLiked(boolean liked) { isLiked = liked; }
-    public void setLikesCount(int likesCount) { this.likesCount = likesCount; }
+    public void setLikesCount(Integer likesCount) { this.likesCount = likesCount; }
 }

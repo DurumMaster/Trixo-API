@@ -72,8 +72,10 @@ public class PostService {
             
             if (isLiked) {
                 post.getLikedBy().remove(userId);
+                post.setLikes_count(post.getLikes_count() - 1);
             } else {
                 post.getLikedBy().add(userId);
+                post.setLikes_count(post.getLikes_count() + 1);
             }
             
             Post updatedPost = postRepository.updateLike(post);
